@@ -522,7 +522,7 @@ class Catalog
 		
 		if (isset($categories[$id_category]))
 			foreach ($categories[$id_category] as $key => $row)
-				$output .= $output .= self::getCategory($categories, $categories[$id_category][$key], $key, $id_selected);
+				$output .= self::getCategory($categories, $categories[$id_category][$key], $key, $id_selected);
 		
 		return $output;
 	}

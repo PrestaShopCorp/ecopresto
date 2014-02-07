@@ -726,7 +726,7 @@ class importerProduct
 					$imgSg->resize($tmpfile, $path.'-'.Tools::stripslashes($image_type['name']).'.jpg', $image_type['width'], $image_type['height']);
 
 			}
-			elseif ($content = file_get_contents($url))
+			elseif ($content = Tools::file_get_contents($url))
 			{
 				$fp = fopen($tmpfile, "w");
 				fwrite($fp, $content);
@@ -757,7 +757,7 @@ class importerProduct
 				if (in_array($image_type['id_image_type'], $watermark_types))
 					Hook::exec('actionWatermark', array('id_image' => $id_image, 'id_product' => $id_entity));
 			}
-			elseif ($content = file_get_contents($url))
+			elseif ($content = Tools::file_get_contents($url))
 			{
 			    	$fp = fopen($tmpfile, "w");
                 		fwrite($fp, $content);
