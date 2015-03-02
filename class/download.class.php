@@ -2,24 +2,25 @@
 /**
 * NOTICE OF LICENSE
 *
-* This source file is subject to a commercial license from SARL Ether Création
+* This source file is subject to a commercial license from Adonie SAS - Ecopresto
 * Use, copy, modification or distribution of this source file without written
-* license agreement from the SARL Ether Création is strictly forbidden.
-* In order to obtain a license, please contact us: contact@ethercreation.com
+* license agreement from Adonie SAS is strictly forbidden.
+* In order to obtain a license, please contact us: info@ecopresto.com
 * ...........................................................................
 * INFORMATION SUR LA LICENCE D'UTILISATION
 *
 * L'utilisation de ce fichier source est soumise a une licence commerciale
-* concedee par la societe Ether Création
+* concedee par la societe Adonie SAS - Ecopresto
 * Toute utilisation, reproduction, modification ou distribution du present
-* fichier source sans contrat de licence ecrit de la part de la SARL Ether Création est
+* fichier source sans contrat de licence ecrit de la part de la SAS Adonie - Ecopresto est
 * expressement interdite.
-* Pour obtenir une licence, veuillez contacter la SARL Ether Création a l'adresse: contact@ethercreation.com
+* Pour obtenir une licence, veuillez contacter Adonie SAS a l'adresse: info@ecopresto.com
 * ...........................................................................
 *
 *  @package ec_ecopresto
-*  @author Arthur Revenaz
-*  @copyright Copyright (c) 2010-2014 S.A.R.L Ether Création (http://www.ethercreation.com)
+*  @author Adonie SAS - Ecopresto | Arthur Revenaz jusqu'à la version 2.10 
+*  @version 2.2
+*  @copyright Copyright (c) Adonie SAS
 *  @license Commercial license
 */
 

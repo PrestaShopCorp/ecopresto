@@ -16,3 +16,4 @@ DROP TABLE IF EXISTS PREFIX_ec_ecopresto_tax;
 DROP TABLE IF EXISTS PREFIX_ec_ecopresto_tax_shop;
 DROP TABLE IF EXISTS PREFIX_ec_ecopresto_info;
 DROP TABLE IF EXISTS PREFIX_ec_ecopresto_tracking;
+DROP TABLE IF EXISTS PREFIX_ec_ecopresto_cataloguebrut;

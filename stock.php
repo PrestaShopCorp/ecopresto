@@ -2,24 +2,25 @@
 /**
 * NOTICE OF LICENSE
 *
-* This source file is subject to a commercial license from SARL Ether Création
+* This source file is subject to a commercial license from Adonie SAS - Ecopresto
 * Use, copy, modification or distribution of this source file without written
-* license agreement from the SARL Ether Création is strictly forbidden.
-* In order to obtain a license, please contact us: contact@ethercreation.com
+* license agreement from Adonie SAS is strictly forbidden.
+* In order to obtain a license, please contact us: info@ecopresto.com
 * ...........................................................................
 * INFORMATION SUR LA LICENCE D'UTILISATION
 *
 * L'utilisation de ce fichier source est soumise a une licence commerciale
-* concedee par la societe Ether Création
+* concedee par la societe Adonie SAS - Ecopresto
 * Toute utilisation, reproduction, modification ou distribution du present
-* fichier source sans contrat de licence ecrit de la part de la SARL Ether Création est
+* fichier source sans contrat de licence ecrit de la part de la SAS Adonie - Ecopresto est
 * expressement interdite.
-* Pour obtenir une licence, veuillez contacter la SARL Ether Création a l'adresse: contact@ethercreation.com
+* Pour obtenir une licence, veuillez contacter Adonie SAS a l'adresse: info@ecopresto.com
 * ...........................................................................
 *
 *  @package ec_ecopresto
-*  @author Arthur Revenaz
-*  @copyright Copyright (c) 2010-2014 S.A.R.L Ether Création (http://www.ethercreation.com)
+*  @author Adonie SAS - Ecopresto | Arthur Revenaz jusqu'à la version 2.10 
+*  @version 2.2
+*  @copyright Copyright (c) Adonie SAS
 *  @license Commercial license
 */
 
@@ -44,7 +45,8 @@ if (Tools::getValue('ec_token') != $catalog->getInfoEco('ECO_TOKEN'))
 	header('Location: ../');
 	exit;
 }
-
+$html .= '<html><body style="font-family:arial"><h3>Cron - Stock</h3><ul>';
+$html .= '<li>Début du traitement '.date('m/d/Y - H:i').'</li>';
 $id_shop = $catalog->getInfoEco('ID_SHOP');
 $stockD = $catalog->getInfoEco('ECO_URL_STOCK').$catalog->tabConfig['ID_ECOPRESTO'];
 $stockL = 'files/stock.xml';
@@ -64,15 +66,19 @@ foreach ($lstTax as $tax)
 											AND `id_country` = '.(int)Configuration::get('PS_COUNTRY_DEFAULT').'
 											AND t.`id_tax` = tr.`id_tax`');
 }
-
+$html .= '<li>Taxe, OK</li>';
 if ($download->load($stockD) == true)
 {
+	$html .= '<li>Téléchargement stock, OK</li>';
 	$download->saveTo($stockL);
 	if (($handle = fopen($stockL, 'r')) !== false)
 	{
 		$etat = $catalog->updateMAJStock();
+		$html .= '<li>MaJ stock, OK</li>';
+		$iteration = 0;
 		while (($data = fgetcsv($handle, 10000, ';')) !== false)
 		{
+			$iteration ++;
 			$ref = $data[0];
 			$qty = $data[1];
 			$pri = $data[2];
@@ -105,10 +111,13 @@ if ($download->load($stockD) == true)
 					updatePrice((int)$reference->id_product, $reference->id_product_attribute, (float)$pri, (float)$tva, 1, $tabTax);
 				}
 		}
+		$html .= '<li>Traitement stock, OK. Itérations: '.$iteration.'</li>';
 		$catalog->updateMAJStock($etat);
 	}
 }
-
+$html .= '<li>Fin du traitement '.date('m/d/Y - H:i').'</li>';
+if (Tools::getValue('debug'))
+	echo $html;
 function updatePrice($idP, $att = 0, $pri, $tva, $idS, $tabTax)
 {
 	$catalog = new Catalog();

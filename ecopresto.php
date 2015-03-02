@@ -2,24 +2,25 @@
 /**
 * NOTICE OF LICENSE
 *
-* This source file is subject to a commercial license from SARL Ether Création
+* This source file is subject to a commercial license from Adonie SAS - Ecopresto
 * Use, copy, modification or distribution of this source file without written
-* license agreement from the SARL Ether Création is strictly forbidden.
-* In order to obtain a license, please contact us: contact@ethercreation.com
+* license agreement from Adonie SAS is strictly forbidden.
+* In order to obtain a license, please contact us: info@ecopresto.com
 * ...........................................................................
 * INFORMATION SUR LA LICENCE D'UTILISATION
 *
 * L'utilisation de ce fichier source est soumise a une licence commerciale
-* concedee par la societe Ether Création
+* concedee par la societe Adonie SAS - Ecopresto
 * Toute utilisation, reproduction, modification ou distribution du present
-* fichier source sans contrat de licence ecrit de la part de la SARL Ether Création est
+* fichier source sans contrat de licence ecrit de la part de la SAS Adonie - Ecopresto est
 * expressement interdite.
-* Pour obtenir une licence, veuillez contacter la SARL Ether Création a l'adresse: contact@ethercreation.com
+* Pour obtenir une licence, veuillez contacter Adonie SAS a l'adresse: info@ecopresto.com
 * ...........................................................................
 *
 *  @package ec_ecopresto
-*  @author     Arthur Revenaz
-*  @copyright    Copyright (c) 2010-2014 S.A.R.L Ether Création (http://www.ethercreation.com)
+*  @author Adonie SAS - Ecopresto | Arthur Revenaz jusqu'à la version 2.10 
+*  @version 2.2
+*  @copyright Copyright (c) Adonie SAS
 *  @license Commercial license
 */
 
@@ -40,9 +41,9 @@ class ecopresto extends Module{
 	{
 		$this->name = 'ecopresto';
 		$this->tab = 'shipping_logistics';
-		$this->version = '2.11';
+		$this->version = '2.2';
 		$this->need_instance = 0;
-		$this->author = 'Ether Création';
+		$this->author = 'Ecopresto';
 		$this->displayName = $this->l('Drop shipping - Ecopresto');
 		$this->description = $this->l('Importer vos produits en Drop shipping avec Ecopresto');
 		$this->confirmUninstall = $this->l('Etes vous sur de vouloir désinstaller le module ?');
@@ -107,11 +108,37 @@ class ecopresto extends Module{
 		}
 		return true;
 	}
-
+	/**
+	 * verifierLicence Contrôle le numéro de licence
+	 * Si le n° de licence renseigné ne semble pas bon, on place le module en mode demo avec la clef de demo
+	 *
+	 * @param string $id_eco la clef renseignée
+	 * @return boolean true si licence OK
+	 */
+	private function verifierLicence($id_eco)
+	{
+		$catalog = new Catalog();
+		if (!empty($id_eco)) {
+			$res = Tools::file_get_contents(self::getInfoEco('ECO_URL_LIC').$id_eco);
+			if (strpos($res, '#error') !== false) {
+				if($id_eco != 'demo123456789demo123456789demo12')
+					$catalog->mettreajourConfEco('ID_ECOPRESTO', 'demo123456789demo123456789demo12', '1');
+				return false;
+			}
+			else
+				return true;
+		}
+		else {
+			if($id_eco != 'demo123456789demo123456789demo12')
+				$catalog->mettreajourConfEco('ID_ECOPRESTO', 'demo123456789demo123456789demo12', '1');
+			return false;
+		}
+			
+	}
+	 
 	private function controleLicence($id_eco, $typ)
 	{
 		$res = Tools::file_get_contents(self::getInfoEco('ECO_URL_LIC').$id_eco);
-
 		if (strpos($res, '#error') !== false)
 			return $res;
 		elseif ($typ == 1)
@@ -119,7 +146,7 @@ class ecopresto extends Module{
 		else
 		{
 			if($id_eco != 'demo123456789demo123456789demo12')
-				Configuration::updateValue('ECOPRESTO_CONFIGURATION_OK', true);
+				$catalog->mettreajourConfEco('ID_ECOPRESTO', 'demo123456789demo123456789demo12', '1');
 			return true;
 		}
 	}
@@ -164,25 +191,106 @@ class ecopresto extends Module{
 
 		if (Tools::isSubmit('maj_tax'))
 		{
+			$catalog->mettreajourInfoEco('isConfig', 1);
 			$catalog->updateTax();
-			$output .= $this->displayConfirmation($this->l('Tax mise à jour'));
+			$output .= $this->displayConfirmation($this->l('Paramètres de taxe correctement mis à jour.'));
 		}
 		if (Tools::isSubmit('maj_lang'))
 		{
+			$catalog->mettreajourInfoEco('isConfig', 1);
 			$catalog->updateLang();
-			$output .= $this->displayConfirmation($this->l('Langue mise à jour'));
+			$output .= $this->displayConfirmation($this->l('Paramètres de langue correctement mis à jour.'));
 		}
 		if (Tools::isSubmit('maj_config'))
 		{
+			$catalog->mettreajourInfoEco('isConfig', 1);
 			$catalog->updateConfig();
-			$output .= $this->displayConfirmation($this->l('Paramètre mise à jour'));
+			$output .= $this->displayConfirmation($this->l('Paramètres du module correctement mis à jour.'));
 		}
 		if (Tools::isSubmit('maj_attributes'))
 		{
+			$catalog->mettreajourInfoEco('isConfig', 1);
 			$catalog->updateAttributes();
-			$output .= $this->displayConfirmation($this->l('Attributs mise à jour'));
+			$output .= $this->displayConfirmation($this->l('Paramètres des attributs correctement mis à jour.'));
 		}
-
+		
+		if (Tools::isSubmit('reset_avertissement_ecopresto'))
+		{
+			$catalog->mettreajourInfoEco('isConfig', 0);
+			$catalog->mettreajourInfoEco('isBienvenue', "0");
+			$catalog->mettreajourInfoEco('isTableCatalogueBrut', "0");
+			$catalog->mettreajourInfoEco('isImportCatalogue', "0");
+			$catalog->mettreajourInfoEco('isProduitEnregistre', "0");
+			$catalog->mettreajourInfoEco('isProduitImportPresta', "0");
+			$output .= $this->displayConfirmation($this->l('Les messages d\'aide à la mise en service du module seront affichés.'));
+		}
+		if (Tools::isSubmit('ignore_tout_avertissement_ecopresto'))
+		{
+			$catalog->mettreajourInfoEco('isConfig', 1);
+			$catalog->mettreajourInfoEco('isBienvenue', "1");
+			$catalog->mettreajourInfoEco('isTableCatalogueBrut', "1");
+			$catalog->mettreajourInfoEco('isImportCatalogue', "1");
+			$catalog->mettreajourInfoEco('isProduitEnregistre', "1");
+			$catalog->mettreajourInfoEco('isProduitImportPresta', "1");
+			$output .= $this->displayConfirmation($this->l('Les messages d\'aide à la mise en service du module ne seront plus affichés.'));
+		}
+		if (Tools::isSubmit('masquer_message_bienvenue')) {
+			$catalog->mettreajourInfoEco('isBienvenue', "1");
+			$output .= $this->displayConfirmation($this->l('Le message de bienvenue ne sera plus affiché.'));
+		}
+		if (Tools::isSubmit('maj_catalogue_ecopresto'))
+		{
+			$catalog->mettreajourInfoEco('isTableCatalogueBrut', "0");
+			$catalog->mettreajourInfoEco('isImportCatalogue', "0");
+			$catalog->mettreajourInfoEco('isProduitEnregistre', "0");
+			$catalog->mettreajourInfoEco('isProduitImportPresta', "0");
+			
+			$var = $catalog->GetCatalogCSV();
+	
+			if (!$var)
+				$output .= $this->displayError($this->l('Erreur lors du téléchargement du catalogue. Essayez à nouveau.'));
+				
+			else {
+				$var2 = $catalog->flushCatalogCSVMySQL(); 
+				if (!$var2)
+					$output .= $this->displayError($this->l('Erreur lors de l\'effacement de la table temporaire. Essayez à nouveau.'));
+				else {
+					$var3 = $catalog->setCatalogCSVMySQL();
+					if (!$var3)
+						$output .= $this->displayError($this->l('Erreur lors de l\'import de la table temporaire. Essayez à nouveau.'));
+					else {
+						$output .= $this->displayConfirmation(sprintf($this->l('Le catalogue contient %1$d lignes à traiter. Passez à l\'étape 2.'), $var));
+						$catalog->mettreajourInfoEco('isTableCatalogueBrut', "1");
+					}
+				} 
+			}
+				
+		}
+		
+		if (Tools::isSubmit('setCatalogBrutToEcopresto'))
+		{
+			$var = $catalog->setCatalogBrutToEcopresto(); 
+			if (!$var)
+				$output .= $this->displayError($this->l('Une erreur est survenue lors du traitement des produits. Essayez à nouveau.'));
+			else {
+				if ($var != "termine" && $var != "erreur")
+					$output .= $this->displayConfirmation(sprintf($this->l('Il reste encore %1$d lignes à traiter. Renouvelez cette étape.'), $var));
+				else {
+					if ($var == "termine") {
+						$catalog->mettreajourInfoEco('isImportCatalogue', "1");
+						$output .= $this->displayConfirmation($this->l('Cette étape est terminée. Vous pouvez sélectionner vos produits.'));
+					}
+					else
+						$output .= $this->displayError($this->l('Une erreur est survenue lors de la finalisation du traitement des produits. Essayez à nouveau.'));
+				}
+			}
+		}
+		/*
+		if (Tools::isSubmit('enregistre_selection_produit')) {
+			$catalog->mettreajourInfoEco('isProduitEnregistre', "1");
+			$output .= $this->displayConfirmation($this->l('Cette étape est terminée. Vous pouvez importer votre sélection de produits dans votre catalogue Prestashop.'));
+		}*/
+		
 		return $output.$this->displayForm();
 	}
 
@@ -191,15 +299,26 @@ class ecopresto extends Module{
 	{
 		$html = '';
 		$catalog = new Catalog();
-		$licence = self::controleLicence($catalog->tabConfig['ID_ECOPRESTO'], 0);
-                
-		if ($licence !== true)
-		{
-			Configuration::updateValue('ECOPRESTO_DEMO', 0);
-			$html .= $this->displayError($licence.$catalog->tabConfig['ID_ECOPRESTO']);
-		}            
-
+		$licence = self::verifierLicence($catalog->tabConfig['ID_ECOPRESTO']);
+		$onglet = "info";
+		$isDemo = false;
+		if (!$licence || $catalog->tabConfig['ID_ECOPRESTO'] == "demo123456789demo123456789demo12") {
+			$isDemo = true;
+			Configuration::updateValue('ID_ECOPRESTO', "demo123456789demo123456789demo12");
+			$catalog->tabConfig['ID_ECOPRESTO'] = "demo123456789demo123456789demo12";
+			$html .= $this->displayError($this->l('Vous utilisez une clef de licence de démonstration. Certaines fonctions ne seront peut-être pas disponibles. Si vous avez une clef de licence valide, utilisez le menu Réglages pour mettre à jour votre clef.'));
+		}           
 		$tabLic = explode(';', self::controleLicence($catalog->tabConfig['ID_ECOPRESTO'], 1));
+		
+		
+		
+		//Définition de l'onglet à afficher par défaut
+		if (Tools::isSubmit('maj_tax') || Tools::isSubmit('maj_lang') || Tools::isSubmit('maj_config') || Tools::isSubmit('maj_attributes') || Tools::isSubmit('ignore_tout_avertissement_ecopresto') || Tools::isSubmit('reset_avertissement_ecopresto'))
+			$onglet = "parametres";
+        if (Tools::isSubmit('maj_catalogue_ecopresto') || Tools::isSubmit('setCatalogBrutToEcopresto') || Tools::isSubmit('enregistre_selection_produit'))
+        	$onglet = "catalogue";
+		
+		
 		$nbTot = Db::getInstance()->getValue('SELECT count(distinct(`supplier_reference`)) FROM  `'._DB_PREFIX_.'product` p, `'._DB_PREFIX_.'ec_ecopresto_product_shop` ps WHERE p.`supplier_reference` = ps.`reference`');
 
 
@@ -247,125 +366,180 @@ class ecopresto extends Module{
 							<p id="closeModalWithoutReload"><a href="#" id="closeModalWithoutReloadButton">'.$this->l('Fermer').'</a></p>
 						</div>
 					</div>';
-
-		if (Configuration::get('ECOPRESTO_DEMO') == 0 || $licence !== true)
-		{
-			$html .= '<h2>'.$this->l('Bienvenue sur le module de dropshipping Ecopresto !.').'<br /><br />'.$this->l('Choisissez une parmi les 3 options ci-dessous et entrez dans l\'univers Ecopresto. N\'oubliez pas de prendre le temps de lire attentivement la documentation du module ! Merci.').'<br /><br />'.
-									$this->l('L\'équipe d\'Ecopresto.').'</h2>';
-
-			$html .= '<div id="menuTab1" class="selected">';
-
-			$html .= '<table class="barcent" cellspacing="10px">
-				<tr>
-					<td class="bartrnto">
-						<div id="cone_1" class="picto_preac">
-							<img src="http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/img/connect.png" />
-						</div>
-					</td>
-					<td class="bartrntqc">
-						<div id="cont_1">
-							<img src="http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/img/femme.png" height="171px" /><br />
-							
-							
-						</div>
-					</td>
-					<td class="bartrntoc">
-						<div id="test_1">
-							
-							<img src="http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/img/homme.png" />
-							
-						</div>
-					</td>
-				</tr>
-				<tr>
-					<td valign="top"><h3>'.$this->l('Vous avez déjà un compte? Enregistrez le ici :').'</h3>
-					</td>
-					<td valign="top"><h3>'.$this->l('Vous n\'avez pas de compte? Contactez Ecopresto !').'</h3>
-					</td>
-					<td valign="top"><h3>'.$this->l('Vous souhaitez le tester gratuitement? Cliquez sur le bouton DEMO !').'</h3>
-					</td>
-				</tr>
-				<tr>
-					<td>
-					<form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_config" method="post">
-									<p>ID EcoPresto : <input type="text" name="CONFIG_ECO[ID_ECOPRESTO]" value="" /></p>
-									<input type="submit" name="maj_config" value="'.$this->l('Activer').'" class="okpreac button"/>
-							   </form>
-					</td>
-					<td><img src="http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/img/contact.jpg" class="contactpreac"/>
-					</td>
-					<td><img src="http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/img/demo.png" class="demopreac"/>
-					</td>
-				</tr>
-				</table>';
-			$html .= '</div>';
-		}
-
-		if (Configuration::get('ECOPRESTO_DEMO') != 0 && $licence === true)
-		{
-			$html .= '<div id="menuTab1" class="selected">	
-				<div class="picto_ac">
-					<img src="http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/img/news.png" id="menuTab12" class="menuTabButton"/>
-					<div class="text_preac">
-						<h3 id="menuTab12" class="menuTabButton">'.$this->l('Actualités Ecopresto').'</h3>
-					</div>
-				</div>
-				<div class="picto_ac">
-					<img src="http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/img/catalogue.png" id="menuTab2" class="menuTabButton"/>
-					<div class="text_preac">
-						<h3 id="menuTab2" class="menuTabButton">'.$this->l('Catalogue Ecopresto').'</h3>
-					</div>
-				</div>
-				<div class="picto_ac">
-					<img src="http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/img/comande.png" id="menuTab10" class="menuTabButton"/>
-					<div class="text_preac">
-						<h3 id="menuTab10" class="menuTabButton">'.$this->l('Commande(s) en attente').'</h3>
-					</div>
-				</div>
-				<div class="picto_ac">
-					<img src="http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/img/tracking.png" id="menuTab11" class="menuTabButton"/>
-					<div class="text_preac">
-						<h3 id="menuTab11" class="menuTabButton">'.$this->l('Suivi(s) de commande').'</h3>
-					</div>
-				</div>
-				<div class="picto_ac">
-					<img src="http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/img/dereference.png" id="menuTab9" class="menuTabButton"/>
-					<div class="text_preac">
-						<h3 id="menuTab9" class="menuTabButton">'.$this->l('Produits supprimés').'</h3>
-					</div>
-				</div>
-				<div class="picto_ac">
-					<img src="http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/img/parametrage.png" id="menuTab6" class="menuTabButton"/>
-					<div class="text_preac">
-						<h3 id="menuTab6" class="menuTabButton">'.$this->l('Réglage module').'</h3>
-					</div>
-				</div>
+		
+			
+		//Barre de menu
+		$html .= '<div class="eco_menubar">
+					<ul>
+						<li class="icone-accueil menuTabButton" id="menuTab12">'.$this->l('Accueil').'</li>
+						<li class="icone-catalogue menuTabButton" id="menuTab2">'.$this->l('Catalogue').'</li>
+						<li class="icone-commande menuTabButton" id="menuTab10">'.$this->l('Commandes').'</li>
+						<li class="icone-suivi menuTabButton" id="menuTab11">'.$this->l('Suivi').'</li>
+						<li class="icone-suppression menuTabButton" id="menuTab9">'.$this->l('Produits supprimés').'</li>
+						<li class="icone-parametres menuTabButton" id="menuTab6">'.$this->l('Réglages').'</li>
+						<li class="icone-aide menuTabButton" id="menuTab20">Support</li>
+					</ul>
 			</div>';
+			
+			
+		
+		if (!$catalog->getInfoEco('isBienvenue')) {
+			
+			$html .= '
+				<div id="bienvenue">
+					<div class="fond">
+					<a href="https://www.youtube.com/watch?v=cjXictCZPos" title="'.$this->l('Comprendre comment fonctionne le dropshipping avec la vidéo').'" id="lien_video" target="_blank"></a>
+					<div id="panneau_monsieur">'.$this->l('Cliquez sur l\'icône Catalogue pour importer une sélection de produits...').'</div>
+					<div id="panneau_madame"><a href="http://www.ecopresto.com" target="_blank">'.$this->l('... et découvrez l\'intégralité du catalogue en ouvrant un compte Ecopresto!').'</a></div>
+					</div>
+					<div class="logo">
+						<h3>'.$this->l('Ecopresto, Dropshipping Marketplace').'</h3>
+						<p>'.$this->l('Rejoignez Ecopresto, place de marché européenne en dropshipping, créée pour aider les e-commerçants et les fournisseurs à développer leurs ventes.').'</p>
+						<ul>
+							<li>'.$this->l('Vous n\'avez pas de compte Ecopresto ? Vous pouvez tester notre module avec une sélection de produit. Découvrez l\'intégralité du catalogue en ouvrant un compte sur notre site Internet.').'</li>
+							<li>'.$this->l('Vous êtes déjà client Ecopresto ? Utilisez le menu Réglages pour indiquer votre numéro de licence.').'</li>
+							<li>'.$this->l('Vous avez besoin d\'aide ? Utilisez le menu Support pour lire la documentation et obtenir de l\'aide.').'</li>
+						</ul>
+						<form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_attributes" method="post">
+							<input type="submit" class="button" name="masquer_message_bienvenue" value="'.$this->l('Masquer ce message').'" />
+						</form>
+					</div>
+				</div>
+				';
 		}
-
+		
+		if ($onglet == "catalogue")
+			$parametrescatalogue = "selected";
 		$html .= '<div id="tabList">';
-		$html .= '<div id="menuTab2Sheet" class="tabItem">';
-
-		$cat = $sscat = '';
-		$ncat = $sscat = -1;
-        $nsscat = 0;
-
-		$all_catalog = Db::getInstance(_PS_USE_SQL_SLAVE_)->ExecuteS('SELECT `category_1`, `ss_category_1`, `name_1`, `category_1`, `manufacturer`, `reference`, `price`, `pmvc`
-																		FROM `'._DB_PREFIX_.'ec_ecopresto_catalog`
-																	   ORDER BY `category_1`, `ss_category_1`,`name_1`');
-
-		$all_selection = Db::getInstance(_PS_USE_SQL_SLAVE_)->ExecuteS('SELECT `reference`, `id_shop`
-																		FROM `'._DB_PREFIX_.'ec_ecopresto_product_shop`
-																		WHERE `imported`=0 AND `id_shop`='.(int)self::getInfoEco('ID_SHOP'));
-		$pdt_sel = array();
-		foreach ($all_selection as $selection)
-			$pdt_sel[$selection['reference']] = ($selection['id_shop'] == self::getInfoEco('ID_SHOP')?1:'');
-
-		$prestashopCategories = Category::getCategories((int)self::getInfoEco('ID_LANG'), false);
-		$lstdercateg = $catalog->getCategory($prestashopCategories, $prestashopCategories[0][1], 1, 0);
-
+		$html .= '<div id="menuTab2Sheet" class="tabItem '.$parametrescatalogue.'">';
+		
+		$html .= '<h3>'.$this->l('Catalogue Ecopresto').'</h3>';
+		
+		$afficherCatalogue = false;
+		if ($catalog->getInfoEco('isConfig')) {
+			
+			if (!$catalog->getInfoEco('isTableCatalogueBrut')){
+				$html .= '<div class="ec_inline step1ko"><form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_attributes" method="post">';
+				$html .= '<h3>'.$this->l('Téléchargement du catalogue').'</h3>';
+				$html .= '<p>'.$this->l('Récupérer les produits Ecopresto').'</p><input type="submit" class="button todo" name="maj_catalogue_ecopresto" value="'.$this->l('Faire cette étape').'" />';
+				$html .= '</form></div>';
+			}
+			else 
+			{
+				$html .= '<div class="ec_inline step1ok"><form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_attributes" method="post">';
+				$html .= '<h3>'.$this->l('Téléchargement du catalogue').'</h3>';
+				$html .= '<p><strong>'.$this->l('Etape faite').'</strong> '.$this->l('Vous avez déjà récupéré les produits Ecopresto.').'</p><input type="submit" class="button" name="maj_catalogue_ecopresto" value="'.$this->l('Mettre à jour').'" />';
+				$html .= '</form></div>';
+			}
+			
+			if (!$catalog->getInfoEco('isTableCatalogueBrut') && !$catalog->getInfoEco('isImportCatalogue') ){
+				$html .= '<div class="ec_inline step2ko"><form class="ec_inline step2" action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_attributes" method="post">';
+				$html .= '<h3>'.$this->l('Import par lot').'</h3>';
+				$html .= '<p>'.$this->l('Le traitement du catalogue ne peut avoir lieu que si le téléchargement est effectif.').'</p>';
+				$html .= '<input type="submit" disabled class="button" name="noaction" value="'.$this->l('A faire').'" />';
+				$html .= '</form></div>';
+			}
+			elseif ($catalog->getInfoEco('isTableCatalogueBrut') && !$catalog->getInfoEco('isImportCatalogue') ){
+				$tabEtat = $catalog->etatCatalogBrutToEcopresto();
+				if ($tabEtat[1] == $tabEtat[2]) {
+					$html .= '<div class="ec_inline step2ko"><form class="ec_inline step2" action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="import_cataloguebrut_ecopresto" method="post">';
+					$html .= '<h3>'.$this->l('Import par lot').'</h3>';
+					$html .= '<p>'.
+						$this->l('Traiter le catalogue. Cette étape se fait en plusieurs fois ').' '.
+						sprintf($this->l('(%1$d fois selon votre configuration). '), $tabEtat[3]).' '.
+						sprintf($this->l('Il reste %1$d lignes à traiter.'), $tabEtat[0]).'
+						</p>';
+					$html .= '<input type="submit" class="button todo" name="setCatalogBrutToEcopresto" value="'.$this->l('Commencer cette étape').'" />';
+				}
+				else {
+					$html .= '<div class="ec_inline step2refresh"><form class="ec_inline step2" action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="import_cataloguebrut_ecopresto" method="post">';
+					$html .= '<h3>'.$this->l('Import par lot').'</h3>';
+					$html .= '<p>'.
+						$this->l('Vous devez encore faire cette étape ').' '.
+						sprintf($this->l('(%1$d fois selon votre configuration). '), $tabEtat[3]).' '.
+						sprintf($this->l('Il reste %1$d lignes à traiter.'), $tabEtat[0]).'
+						
+						</p>';
+					$html .= '<input type="submit" class="button retodo" name="setCatalogBrutToEcopresto" value="'.$this->l('Continuer cette étape').'" />';
+				}
+				
+				$html .= '</form></div>';
+			} else {
+				$html .= '<div class="ec_inline step2ok">';
+				$html .= '<h3>'.$this->l('Import par lot').'</h3>';
+				$html .= '<p><strong>'.$this->l('Etape faite').'</strong> '.$this->l('Pour recommencer cette étape, vous devez refaire l\'étape 1. Il n\'y a aucun impact sur vos sélections précédentes.').'</p>';
+				$html .= '</div>';
+			}
+			
+				
+			if (!$catalog->getInfoEco('isProduitEnregistre') && !($catalog->getInfoEco('isTableCatalogueBrut') && $catalog->getInfoEco('isImportCatalogue'))){
+				$html .= '<div class="ec_inline step3ko">';
+				$html .= '<h3>'.$this->l('Sélection des produits').'</h3>';
+				$html .= '<p>'.$this->l('Vous devez avoir importé le catalogue pour choisir vos produits.').'</p>';
+				$html .= '</div>';
+			} elseif (!$catalog->getInfoEco('isProduitEnregistre') && ($catalog->getInfoEco('isTableCatalogueBrut') && $catalog->getInfoEco('isImportCatalogue'))){
+				$html .= '<div class="ec_inline step3ko">';
+				$html .= '<h3>'.$this->l('Sélection des produits').'</h3>';
+				$html .= '<p>'.$this->l('Utilisez le tableau ci-dessous pour sélectionner vos produits. Cliquez sur le bouton Enregistrer en bas pour enregistrer votre sélection.').'</p>';
+				$html .= '</div>';
+			} elseif ($catalog->getInfoEco('isProduitEnregistre')) {
+				$html .= '<div class="ec_inline step3ok">';
+				$html .= '<h3>'.$this->l('Sélection des produits').'</h3>';
+				$html .= '<p><strong>'.$this->l('Etape faite').'</strong> '.$this->l('Vous pouvez modifier votre sélection de produit à tout moment. Utilisez le bouton Enregistrer en bas avant d\'importer les produits.').'</p>';
+				$html .= '</div>';
+			}
+			if (!$catalog->getInfoEco('isProduitEnregistre') && !$catalog->getInfoEco('isProduitImportPresta')){
+				$html .= '<div class="ec_inline step4ko">';
+				$html .= '<h3>'.$this->l('Import des produits').'</h3>';
+				$html .= '<p>'.$this->l('Vous devez avoir enregistré une sélection de produits pour les importer dans votre catalogue Prestashop.').'</p>';
+				$html .= '</div>';
+			} elseif ($catalog->getInfoEco('isProduitEnregistre') && !$catalog->getInfoEco('isProduitImportPresta')){
+				$html .= '<div class="ec_inline step4ko">';
+				$html .= '<h3>'.$this->l('Import des produits').'</h3>';
+				$html .= '<p>'.$this->l('Cliquez sur le bouton Importer en bas pour importer les produits sélectionnés dans votre catalogue Prestashop.').'</p>';
+				$html .= '</div>';
+			} elseif ($catalog->getInfoEco('isProduitImportPresta')){
+				$html .= '<div class="ec_inline step4ok">';
+				$html .= '<h3>'.$this->l('Import des produits').'</h3>';
+				$html .= '<p><strong>'.$this->l('Etape faite').'</strong> '.$this->l('Utilisez les boutons Enregistrer et Importer pour choisir vos produits et les importer dans Prestashop.').'</p>';
+				$html .= '</div>';
+			}
+			$html .= '<div style="clear:both;">&nbsp;</div>';
+			
+		} else
+			$html .= $this->displayError($this->l('Vous devez impérativement valider les paramètres de votre module avant de télécharger le catalogue. Cliquez sur l\'icône Réglages et validez les paramètres proposés.'));
+		
+		if ($catalog->getInfoEco('isTableCatalogueBrut') && $catalog->getInfoEco('isImportCatalogue')) {
+			$cat = $sscat = '';
+			$ncat = $sscat = -1;
+	        $nsscat = 0;
+	
+			$all_catalog = Db::getInstance(_PS_USE_SQL_SLAVE_)->ExecuteS('SELECT `category_1`, `ss_category_1`, `name_1`, `category_1`, `manufacturer`, `reference`, `price`, `pmvc`
+																			FROM `'._DB_PREFIX_.'ec_ecopresto_catalog`
+																		   ORDER BY `category_1`, `ss_category_1`,`name_1`');
+	
+			$all_selection = Db::getInstance(_PS_USE_SQL_SLAVE_)->ExecuteS('SELECT `reference`, `id_shop`
+																			FROM `'._DB_PREFIX_.'ec_ecopresto_product_shop`
+																			WHERE `imported`=0 AND `id_shop`='.(int)self::getInfoEco('ID_SHOP'));
+			$pdt_sel = array();
+			foreach ($all_selection as $selection)
+				$pdt_sel[$selection['reference']] = ($selection['id_shop'] == self::getInfoEco('ID_SHOP')?1:'');
+	
+			$prestashopCategories = Category::getCategories((int)self::getInfoEco('ID_LANG'), false);
+			$lstdercateg = $catalog->getCategory($prestashopCategories, $prestashopCategories[0][1], 1, 0);
+		}
 		if ($all_catalog)
 		{
+			$totalref = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('SELECT COUNT(distinct reference) FROM  `'._DB_PREFIX_.'ec_ecopresto_catalog`', true, 0);
+			if ($totalref > 2000)
+				$html .= '<div class="bootstrap">
+							<div class="module_confirmation conf warning alert alert-warning">
+								<button type="button" class="close" data-dismiss="alert">×</button>
+								<strong>'.$this->l('Attention,').'</strong><br/>'.sprintf($this->l('Ecopresto vous propose de choisir parmi %1$d références différentes. Le tableau qui va vous permettre d\'afficher ces références peut-être long à afficher, et vos sélections peuvent être difficile à faire selon votre configuration locale (navigateur utilisé, puissance de votre ordinateur, etc.). Nous mettons tout en oeuvre pour réduire ces inconvénients, mais soyez patient si vous rencontrez des difficultés, elles sont le fait de traitement locaux, et non pas du serveur Ecopresto. Le cas échéant, nous vous invitons à tester votre module avec un autre navigateur, comme Google Chrome ou Opera.'), $totalref).'
+							</div>
+							</div>';
+			
+			
 			$html .= '<span id="spnColMng"></span><div id="colsMng"></div>';
 
 			$html .= '<form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_catalogue" method="post">
@@ -473,22 +647,48 @@ class ecopresto extends Module{
 					   catSelSpeAfter();
 					</script>';
 						$html .= '<p class="spealer"><b>'.$this->l('Produits autorisés : ').'<span class="totAuth">'.$nbTot.'</span>/<span class="totAuthMax">'.$tabLic[2].'</span></b><p>';
-		}
-		$html .= '<p><input id="importCat" type="submit" class="button" name="OK" value="'.$this->l('1 - Rafraichir le catalogue proposé par Ecopresto').'" onclick="javascript:GetFilecsv();" /></p>';
-		if ($all_catalog)
-            $html .= '<p><input type="submit" class="button" name="OK"  id="validSelect" value="'.$this->l('2 - Enregistrer la sélection de produits').'" onclick="javascript:MAJProduct();" /></p>';
-        $html .= '<p><input type="button" onclick="javascript:recupInfoMajPS(1)" value="'.$this->l('3 - Importer la selection dans sa boutique').'" class="button" /></p>';
+		
+		
+			$html .= '<h3>'.$this->l('Etape 3').': '.$this->l('Sélection des produits').'</h3>';
+			$html .= '<p>'.$this->l('Utilisez ce bouton pour enregistrer votre sélection de produits Ecopresto. Une fois l\'enregistrement effectué, vous pourrez importer cette sélection dans votre catalogue Prestashop (étape 4).').'
+		 <br/><input type="submit" class="button" name="OK"  name="enregistre_selection_produit"  id="validSelect" value="'.$this->l('Enregistrer la sélection de produits').'" onclick="javascript:MAJProduct();" /></p>';
+        
+		 	if ($catalog->getInfoEco('isProduitEnregistre')) {
+		 		$html .= '<h3>'.$this->l('Etape 4').': '.$this->l('Import des produits').'</h3>';
+		 		$html .= '<p>'.$this->l('Utilisez ce bouton pour importer votre sélection de produits Ecopresto dans votre catalogue Prestashop. Une fois l\'import effectué, vous pouvez gérer ces produits depuis l\'interface de gestion des produits Prestashop.').'<br/><input type="button" onclick="javascript:recupInfoMajPS(1)" value="'.$this->l('Importer la selection dans ma boutique').'" class="button" /></p>';
+		 	}
+		 	
+        }
 		$html .= '</div>';
 
-		$html .= '<div id="menuTab6Sheet" class="tabItem">';
+
+		//Onglet affiché si on revient vers les paramètres
+		if ($onglet == "parametres")
+			$parametres = "selected";
+		$html .= '<div id="menuTab6Sheet" class="tabItem '.$parametres.'">';
+		
+		$html .= '<div class="aide_locale"><h3>'.$this->l('A propos...').'</h3>'.$this->l('Chaque bloc de paramètres doit être validé individuellement en utilisant le bouton de validation correspondant.').'</div>';
+		
+		$html .= '<div class="aide_locale"><h3>'.$this->l('Tâches CRON').'</h3>'.$this->l('Pour le bon fonctionnement de votre module, vous devez ajouter 3 tâches cron qui devront appeler les URL suivantes :');
+		$html .= '<ul><li>'.$this->l('Stock : ').'http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/stock.php?ec_token='.Tools::safeOutput(self::getInfoEco('ECO_TOKEN')).'<blockquote><a href="http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/stock.php?debug=1&ec_token='.Tools::safeOutput(self::getInfoEco('ECO_TOKEN')).'" target="_blank"><em>Lancer cette tâche manuellement</em></a></blockquote></li>';
+				$html .= '<li>'.$this->l('Commande : ').'http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/gen_com.php?ec_token='.Tools::safeOutput(self::getInfoEco('ECO_TOKEN')).'<blockquote><a href="http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/gen_com.php?debug=1&ec_token='.Tools::safeOutput(self::getInfoEco('ECO_TOKEN')).'" target="_blank"><em>Lancer cette tâche manuellement</em></a></blockquote></li>';
+				$html .= '<li>'.$this->l('Tracking : ').'http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/tracking.php?ec_token='.Tools::safeOutput(self::getInfoEco('ECO_TOKEN')).'<blockquote><a href="http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/tracking.php?debug=1&ec_token='.Tools::safeOutput(self::getInfoEco('ECO_TOKEN')).'" target="_blank"><em>Lancer cette tâche manuellement</em></a></blockquote></li></ul>';
+		$html .= '</div>';
+		
+		$html .= '<fieldset><legend>'.$this->l('Votre licence Ecopresto').'</legend>';
+		$html .= '<form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_config" method="post">
+					<p>'.$this->l('N° de licence').' : <input type="text" name="CONFIG_ECO[ID_ECOPRESTO]" value="'.$catalog->tabConfig['ID_ECOPRESTO'].'" class="longinput" /></p>
+					<input type="submit" name="maj_config" value="'.$this->l('Activer').'" class="okpreac button"/>
+				  </form>';
+		$html .= '</fieldset>';
+		
+		$html .= '<fieldset><legend>'.$this->l('Paramètres du module Ecopresto').'</legend>';
 		$html .= '<form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_config" method="post">';
 
-		$html .= '<h3>'.$this->l('Cron :').'</h3>';
-				$html .= '<p>'.$this->l('Stock : ').'http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/stock.php?ec_token='.Tools::safeOutput(self::getInfoEco('ECO_TOKEN')).'</p>';
-				$html .= '<p>'.$this->l('Commande : ').'http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/gen_com.php?ec_token='.Tools::safeOutput(self::getInfoEco('ECO_TOKEN')).'</p>';
-				$html .= '<p>'.$this->l('Tracking : ').'http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/tracking.php?ec_token='.Tools::safeOutput(self::getInfoEco('ECO_TOKEN')).'</p>';
+		
+				
 
-		$html .= '<h3>'.$this->l('Prix').'</h3>';
+		$html .= '<h3>'.$this->l('Paramètres du module').'</h3>';
 		$html .= '<p>'.$this->l('Importer les prix d\'achat :').'
 					<input type="radio" name="CONFIG_ECO[PA_TAX]" value="1" '.(($catalog->tabConfig['PA_TAX'] == 1)?'checked=checked':'').' /> '.$this->l('HT').'
 					<input type="radio" name="CONFIG_ECO[PA_TAX]" value="0" '.(($catalog->tabConfig['PA_TAX'] == 0)?'checked=checked':'').' /> '.$this->l('TTC').'
@@ -498,7 +698,7 @@ class ecopresto extends Module{
 					<input type="radio" name="CONFIG_ECO[PMVC_TAX]" value="0" '.(($catalog->tabConfig['PMVC_TAX'] == 0)?'checked=checked':'').' /> '.$this->l('TTC').'
 				</p>';
 
-		$html .= '<h3>'.$this->l('Paramètres autres').'</h3>';
+		//$html .= '<h3>'.$this->l('Paramètres autres').'</h3>';
 
 		$html .= '<p>'.$this->l('Mettre à jour les prix de vente généralement constaté : ').'
 					<input type="radio" name="CONFIG_ECO[UPDATE_PRICE]" value="1" '.(($catalog->tabConfig['UPDATE_PRICE'] == 1)?'checked=checked':'').' /> <img title="'.$this->l('Oui').'" alt="'.$this->l('Oui').'" src="../img/admin/enabled.gif">
@@ -538,35 +738,65 @@ class ecopresto extends Module{
 					<input type="radio" name="CONFIG_ECO[IMPORT_AUTO]" value="1" '.(($catalog->tabConfig['IMPORT_AUTO'] == 1)?'checked=checked':'').' /> '.$this->l('Automatique').'
 					<input type="radio" name="CONFIG_ECO[IMPORT_AUTO]" value="0" '.(($catalog->tabConfig['IMPORT_AUTO'] == 0)?'checked=checked':'').' /> '.$this->l('Manuelle').'
 				</p>';
+		
+		$html .= '<p>'.$this->l('Nombre de ligne a traiter par lot d\'import : ').'
+					<input type="text" name="CONFIG_ECO[NB_LIGNE_IMPORT]" value="'.$catalog->tabConfig['NB_LIGNE_IMPORT'].'" /></p>';
 
 		$html .= '<p><input type="submit" class="button" name="maj_config" value="'.$this->l('Enregistrer').'" /></p>';
 		$html .= '</form>';
-
-		$html .= '<h3>'.$this->l('Parametrage multilangue').'</h3>';
+		
+		$html .= '</fieldset>';
+		
+		$html .= '<fieldset><legend>'.$this->l('Paramètres de langue').'</legend>';
 		$html .= '<form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_lang" method="post">';
 		$html .= $catalog->getAllLang();
 		$html .= '<p><input type="submit" class="button" name="maj_lang" value="'.$this->l('Mise à jour multilangue').'" /></p>';
 		$html .= '</form>';
+		$html .= '</fieldset>';
 
+		$html .= '<fieldset><legend>'.$this->l('Paramètres de taxe').'</legend>';
 		$html .= '<h3>'.$this->l('Parametrage Taxe').'</h3>';
 		$html .= '<form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_focus" method="post">';
 		$html .= $catalog->getAllTax();
 		$html .= '<p><input type="submit" class="button" name="maj_tax" value="'.$this->l('Mise à jour taxe').'" /></p>';
 		$html .= '</form>';
-
-		$html .= '<h3>'.$this->l('Paramètrage attribut').'</h3>';
+		$html .= '</fieldset>';
+		
+		$html .= '<fieldset><legend>'.$this->l('Paramètres des attributs').'</legend>';
 		$html .= '<form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_attributes" method="post">';
 		$html .= $catalog->getAllAttributes();
 		$html .= '<p><input type="submit" class="button" name="maj_attributes" value="'.$this->l('Mise à jour attribut').'" /></p>';
 		$html .= '</form>';
+		$html .= '</fieldset>';
+		
+		$html .= '<fieldset><legend>'.$this->l('Afficher les messages d\'aide').'</legend>';
+		$html .= '<form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_attributes" method="post">';
+		$html .= '<p>En cliquant sur ce bouton, vous déclencherez l\'affichage de tous les messages d\'aide à la mise en service du module. Il n\'y a pas d\'impact sur vos sélections de produit, ou toutes les autres actions du module.</p>';
+		$html .= '<p><input type="submit" class="button" name="reset_avertissement_ecopresto" value="'.$this->l('Afficher les messages d\'aide').'" /></p>';
+		$html .= '</form>';
+		$html .= '</fieldset>';
+		
+		$html .= '<fieldset><legend>'.$this->l('Ignorer les messages d\'aide').'</legend>';
+		$html .= '<form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_attributes" method="post">';
+		$html .= '<p>En cliquant sur ce bouton, vous supprimerez tous les messages d\'aide à la mise en service du module. Il n\'y a pas d\'impact sur vos sélections de produit, ou toutes les autres actions du module.</p>';
+		$html .= '<p><input type="submit" class="button" name="ignore_tout_avertissement_ecopresto" value="'.$this->l('Ignorer les messages d\'aide').'" /></p>';
+		$html .= '</form>';
+		$html .= '</fieldset>';
+		
+		
 
 		$html .= '</div>';
-
-		$html .= '<div id="menuTab12Sheet" class="tabItem">';
-		$html .= '<iframe src="'.Tools::safeOutput(self::getInfoEco('ECO_URL_ACTU')).Tools::safeOutput($catalog->tabConfig['ID_ECOPRESTO']).'" class="barcent" ></iframe>';
+		
+		//Affiché par défaut
+		if ($onglet == "info")
+			$info = "selected";
+		$html .= '<div id="menuTab12Sheet" class="tabItem '.$info.'">';
+		$html .= '<h3>'.$this->l('Bienvenue dans votre module Ecopresto').'</h3>';
+		$html .= '<iframe border="0" frameborder="no" marginwidth="0" marginheight="0" height="800px;" src="'.Tools::safeOutput(self::getInfoEco('ECO_URL_ACTU')).Tools::safeOutput($catalog->tabConfig['ID_ECOPRESTO']).'" class="barcent" ></iframe>';
 		$html .= '</div>';
 
 		$html .= '<div id="menuTab10Sheet" class="tabItem">';
+		$html .= '<h3>'.$this->l('Commandes Ecopresto').'</h3>';
 		$commande = $catalog->getOrders(0);
 
 		if (isset($commande) && count($commande) > 0)
@@ -603,6 +833,7 @@ class ecopresto extends Module{
 		$html .= '</div>';
 
 		$html .= '<div id="menuTab11Sheet" class="tabItem">';
+		$html .= '<h3>'.$this->l('Suivi des trackings commandes Ecopresto').'</h3>';
 		$tracking = $catalog->getTracking();
 
 		if (isset($tracking) && count($tracking) > 0)
@@ -639,7 +870,9 @@ class ecopresto extends Module{
 
 		$html .= '</div>';
 
+
 		$html .= '<div id="menuTab9Sheet" class="tabItem">';
+		$html .= '<h3>'.$this->l('Produits Ecopresto dérérencés').'</h3>';
 		$html .= '<p><input type="submit" class="button" name="OK"  id="maj_dereferncement" value="'.$this->l('Importer les articles déréférencés').'" onclick="javascript:MAJDereferencement();" /></p>';
 
 		$all_deref = Db::getInstance(_PS_USE_SQL_SLAVE_)->ExecuteS('SELECT `reference`, `dateDelete`
@@ -678,44 +911,104 @@ class ecopresto extends Module{
 			$html .= $this->l('Aucun produit déréférencé');
 
 		$html .= '</div>';
+		
+		//Affiché par défaut
+		if ($onglet == "aide")
+			$aide = "selected";
+		$html .= '<div id="menuTab20Sheet" class="tabItem '.$aide.'">';
+		$html .= '<div class="aide_locale"><h3>'.$this->l('Support technique').'</h3>'.$this->l('Vous pouvez faire une demande de support technique en utilisant le lien suivant : ').'<a href="http://addons.prestashop.com/contact-community.php?id_product=11052" target="_blank">'.$this->l('http://addons.prestashop.com/contact-community.php?id_product=11052').'</a></div>';
+		$html .= '<div class="aide_locale"><h3>'.$this->l('Documentation technique').'</h3>'.$this->l('Vous pouvez télécharger notre documentation technique en utilisant le lien suivant : ').'<a href="http://www.ecopresto.com/images/pdf/support_presta_v2_fr.pdf" target="_blank">'.$this->l('http://www.ecopresto.com/images/pdf/support_presta_v2_fr.pdf').'</a></div>';
+		$html .= '<h3>'.$this->l('Informations de diagnostic').'</h3><em>'.$this->l('Pour accompagner votre demande de support, nous aurons probablement besoins des informations suivantes, ainsi que les informations situées en bas de page sous la rubrique "Tableau de bord / Informations techniques". Vous pouvez les copier/coller tel quel dans votre message :').'</em></em><ul>';
+		$html .= '<li>'.$this->l('Version Prestashop').' : '._PS_VERSION_.'</li>';
+		$html .= '<li>'.$this->l('Prestashop - cache activé ?').' : '._PS_CACHE_ENABLED_.'</li>';
+		$html .= '<li>'.$this->l('Prestashop - SQL slave ?').' : '._PS_USE_SQL_SLAVE_.'</li>';
+		$html .= '<li>'.$this->l('Prestashop - mode dev ?').' : '._PS_MODE_DEV_.'</li>';
+		$html .= '<li>'.$this->l('Prestashop - mode demo ?').' : '._PS_MODE_DEMO_.'</li>';
+		if (version_compare(_PS_VERSION_, '1.5', '>='))
+		{
+			$html .= '<li>'.$this->l('Prestashop - id shop ?').' : '.$this->context->shop->id.'</li>';
+			$html .= '<li>'.$this->l('Prestashop - id lang ?').' : '.$this->context->language->id.'</li>';
+		}
+		$html .= '<hr/>';
+		$html .= '<li>'.$this->l('Version PHP').' : '.phpversion().'</li>';
+		$html .= '<li>'.$this->l('Max PHP Time').' : '.ini_get("max_execution_time").' sec.</li>';
+		$html .= '<li>'.$this->l('Memory PHP').' : '.ini_get("memory_limit").' Mo</li>';
+		$html .= '<li>'.$this->l('Début des tests sur les fonctions PHP : ').'</li>';
+		if (!function_exists ('file_get_contents'))
+			$html .= '<li>'.$this->l('PHP file_get_contents').' : <span style="color:orange">Fonction désactivée</span></li>';
+		if (!function_exists ('file_get_contents'))
+			$html .= '<li>'.$this->l('PHP fwrite').' : <span style="color:orange">Fonction désactivée</span></li>';
+		if (!function_exists ('fopen'))
+			$html .= '<li>'.$this->l('PHP fopen').' : <span style="color:orange">Fonction désactivée</span></li>';	
+		$html .= '<li>'.$this->l('Fin des tests sur les fonction PHP - OK si aucun avertissement ci-dessus.').'</li>';	
+			
+		$html .= '<hr/>';
+		if (is_writable(_PS_ROOT_DIR_.'/modules/ecopresto/files/'))
+			$html .= '<li>'.$this->l('Droits d\'écriture sur le dossier ecopresto/files').' : Oui</li>';
+		else
+			$html .= '<li>'.$this->l('Droits d\'écriture sur le dossier ecopresto/files').' : <span style="color:orange">Non</span></li>';
+		
+		if (file_exists(_PS_ROOT_DIR_.'/modules/ecopresto/files/catalogue.csv')) {
+			$html .= '<ul><li>'.$this->l('Le fichier catalogue.csv existe.').'</li>';
+			if (is_writable(_PS_ROOT_DIR_.'/modules/ecopresto/files/catalogue.csv'))
+				$html .= '<li>'.$this->l('Droits d\'écriture sur le fichier catalogue.csv').' : Oui</li>';
+			else
+				$html .= '<li>'.$this->l('Droits d\'écriture sur le fichier catalogue.csv').' : <span style="color:orange">Non</span></li>';
+			$taille = (filesize(_PS_ROOT_DIR_.'/modules/ecopresto/files/catalogue.csv') / 1024) / 1024;
+			$html .= '<li>'.$this->l('Taille du fichier catalogue.csv').' : '.round($taille, 2).' Mo</li>';
+		} else 
+			$html .= '<li><span style="color:orange">'.$this->l('Le fichier catalogue.csv n\'existe pas.').'</span></li>';
+		$html .= '</ul><ul>';
+		if (file_exists(_PS_ROOT_DIR_.'/modules/ecopresto/files/stock.xml')) {
+			$html .= '<li>'.$this->l('Le fichier stock.xml existe.').'</li>';
+			if (is_writable(_PS_ROOT_DIR_.'/modules/ecopresto/files/stock.xml'))
+				$html .= '<li>'.$this->l('Droits d\'écriture sur le fichier stock.xml').' : Oui</li>';
+			else
+				$html .= '<li>'.$this->l('Droits d\'écriture sur le fichier stock.xml').' : <span style="color:orange">Non</span></li>';
+			$taille = (filesize(_PS_ROOT_DIR_.'/modules/ecopresto/files/stock.xml') / 1024) / 1024;
+			$html .= '<li>'.$this->l('Taille du fichier stock.xml').' : '.round($taille, 2).' Mo</li>';	
+		} else 
+			$html .= '<li><span style="color:orange">'.$this->l('Le fichier stock.xml n\'existe pas.').'</span></li>';
+		$html .= '</ul><ul>';
+		if (file_exists(_PS_ROOT_DIR_.'/modules/ecopresto/files/tracking.xml')) {
+			$html .= '<li>'.$this->l('Le fichier tracking.xml existe.').'</li>';
+			if (is_writable(_PS_ROOT_DIR_.'/modules/ecopresto/files/tracking.xml'))
+				$html .= '<li>'.$this->l('Droits d\'écriture sur le fichier tracking.xml').' : Oui</li>';
+			else
+				$html .= '<li>'.$this->l('Droits d\'écriture sur le fichier tracking.xml').' : <span style="color:orange">Non</span></li>';
+			$taille = (filesize(_PS_ROOT_DIR_.'/modules/ecopresto/files/tracking.xml') / 1024) / 1024;
+			$html .= '<li>'.$this->l('Taille du fichier tracking.xml').' : '.round($taille, 2).' Mo</li>';	
+		} else 
+			$html .= '<li><span style="color:orange">'.$this->l('Le fichier tracking.xml n\'existe pas.').'</span></li>';
+		$html .= '</ul></ul>';
+		$html .= '</div>';
+
+
 
 		$html .= '</div>';
 
 		$html .= '<div class="footermodeco">
 			<div id="infoSpe">
+				<h3>Tableau de bord / Informations techniques</h3>
+				
 				<p>'.$this->l('Dernière remontée des commandes : ').Tools::safeOutput($catalog->tabConfig['DATE_ORDER']).'</p>
 				<p>'.$this->l('Dernière remontée des stocks : ').Tools::safeOutput($catalog->tabConfig['DATE_STOCK']).'</p>
 				<p>'.$this->l('Import catalogue Ecopresto : ').Tools::safeOutput($catalog->tabConfig['DATE_IMPORT_ECO']).'</p>
 				<p>'.$this->l('Synchronisation de la sélection dans Prestashop : ').Tools::safeOutput($catalog->tabConfig['DATE_IMPORT_PS']).'</p>
-				<p>'.$this->l('Mise à jour de la sélection dans le catalogue Ecopresto : ').Tools::safeOutput($catalog->tabConfig['DATE_UPDATE_SELECT_ECO']).'</p>
-				<p '.(isset($tabLic[1]) && $tabLic[1] < time()?' class="aleecoef" ':'').'>'.$this->l('Date de fin d\'adhésion : ').(isset($tabLic[1])?date('d/m/Y', $tabLic[1]):'').'</p>
+				<p>'.$this->l('Mise à jour de la sélection dans le catalogue Ecopresto : ').Tools::safeOutput($catalog->tabConfig['DATE_UPDATE_SELECT_ECO']).'</p>';
+		$html .= '<p>'.$this->l('N° de licence Ecopresto : ').Tools::safeOutput($catalog->tabConfig['ID_ECOPRESTO']).'</p>';
+		if ($isDemo)
+			$html .= '<p><strong>Vous utilisez une licence de démonstration. Utilisez le menu Réglages pour saisir votre numéro de licence.</strong></p>';
+		else		
+			$html .= '<p '.(isset($tabLic[1]) && $tabLic[1] < time()?' class="aleecoef" ':'').'>'.$this->l('Date de fin d\'adhésion : ').(isset($tabLic[1])?date('d/m/Y', $tabLic[1]):'').'</p>
 				<p '.(isset($tabLic[2]) && $nbTot > $tabLic[2]?' class="aleecoef" ':'').'>'.$this->l('Nombre de produits sélectionnés / Nb de produits autorisés :').$nbTot.'/'.(isset($tabLic[2])?$tabLic[2]:'').'</p>
-				'.(isset($tabLic[3])?'<p '.('www.'.Configuration::get('PS_SHOP_DOMAIN') != 'www.'.$tabLic[3] && 'www.'.Configuration::get('PS_SHOP_DOMAIN') != 'http://'.$tabLic[3] && 'www.'.Configuration::get('PS_SHOP_DOMAIN') != $tabLic[3] && Configuration::get('PS_SHOP_DOMAIN') != 'www.'.$tabLic[3] && Configuration::get('PS_SHOP_DOMAIN') != $tabLic[3] && Tools::safeOutput($catalog->tabConfig['ID_ECOPRESTO']) != 'demo123456789demo123456789demo12'?' class="aleecoef" ':'').'>'.$this->l('URL du site enregistré : ').Tools::safeOutput($tabLic[3]):'').'</p>
-			</div>
-			 <div id="actSpeFoo">';
+				'.(isset($tabLic[3])?'<p '.('www.'.Configuration::get('PS_SHOP_DOMAIN') != 'www.'.$tabLic[3] && 'www.'.Configuration::get('PS_SHOP_DOMAIN') != 'http://'.$tabLic[3] && 'www.'.Configuration::get('PS_SHOP_DOMAIN') != $tabLic[3] && Configuration::get('PS_SHOP_DOMAIN') != 'www.'.$tabLic[3] && Configuration::get('PS_SHOP_DOMAIN') != $tabLic[3] && Tools::safeOutput($catalog->tabConfig['ID_ECOPRESTO']) != 'demo123456789demo123456789demo12'?' class="aleecoef" ':'').'>'.$this->l('URL du site enregistré : ').Tools::safeOutput($tabLic[3]):'').'</p>';
+			
+				
+		$html .= '</div>';
 
-				if (Configuration::get('ECOPRESTO_DEMO') != 2 || $licence !== true)
-				{
-					$html .= '<div class="picfo">
-						<img src="http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/img/cle.png" class="actlic" />
-						<h3 class="actlic">'.$this->l('Activer mon compte').'</h3>
-					</div>';
-				}
-
-				$html .= '<div class="picfo">
-					<a href="http://www.ecopresto.com/images/pdf/support_presta_v2_fr.pdf" target="_blank">
-						<img src="http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/img/doc.png" />
-						<h3>'.$this->l('Documentation').'</h3>
-					</a>
-				</div>
-				<div class="picfo">
-					<a href="http://addons.prestashop.com/contact-community.php?id_product=11052" target="_blank">
-						<img src="http://'.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/ecopresto/img/aide.png" />
-						<h3>'.$this->l('Support').'</h3>
-					</a>
-				</div>
-			</div>
-			<p class="fooCop">'.$this->l('Développé par : Agence ').$this->author.' - <a href="http://www.ethercreation.com">www.ethercreation.com</a><br /><i><strong>'.$this->l('Ce module ne peut ni être diffusé, modifié, ou vendu sans l\'accord au préalable écrit de la société Ether Création').'</i></strong></p>
+		$html .='	
+			<p class="fooCop">'.$this->l('Adonie SAS - Ecopresto | Tous droits réservés | L\'exploitation complète de ce module nécessite un abonnement auprès d\'Ecopresto.').'<br/><a href="http://www.ecopresto.com" target="_blank">http://www.ecopresto.com</a></p>
 		</div>';
 
 		return $html;

@@ -18,7 +18,7 @@
 * @copyright Copyright (c) 2010-2014 S.A.R.L Ether Création (http://www.ethercreation.com)
 * @author Arthur Revenaz
 * @license Commercial license
-*/
+*/ 
 
 function MAJDereferencement()
 {
@@ -512,7 +512,7 @@ $(document).ready(function()
             rows_counter: false,  
             enable_default_theme: false,    
             loader: true,  
-            loader_html: '<h4 style="color:red;">Loading, please wait...</h4>',
+            loader_html: '<h4 style="color:green;">Chargement en cours, merci de patienter...</h4><em>Please wait while loading data...</em>',
     extensions: {     
                     name:['ColsVisibility'],   
                     src:['../modules/ecopresto/js/TFExt_ColsVisibility/TFExt_ColsVisibility.js'],   

@@ -2,24 +2,25 @@
 /**
 * NOTICE OF LICENSE
 *
-* This source file is subject to a commercial license from SARL Ether Création
+* This source file is subject to a commercial license from Adonie SAS - Ecopresto
 * Use, copy, modification or distribution of this source file without written
-* license agreement from the SARL Ether Création is strictly forbidden.
-* In order to obtain a license, please contact us: contact@ethercreation.com
+* license agreement from Adonie SAS is strictly forbidden.
+* In order to obtain a license, please contact us: info@ecopresto.com
 * ...........................................................................
 * INFORMATION SUR LA LICENCE D'UTILISATION
 *
 * L'utilisation de ce fichier source est soumise a une licence commerciale
-* concedee par la societe Ether Création
+* concedee par la societe Adonie SAS - Ecopresto
 * Toute utilisation, reproduction, modification ou distribution du present
-* fichier source sans contrat de licence ecrit de la part de la SARL Ether Création est
+* fichier source sans contrat de licence ecrit de la part de la SAS Adonie - Ecopresto est
 * expressement interdite.
-* Pour obtenir une licence, veuillez contacter la SARL Ether Création a l'adresse: contact@ethercreation.com
+* Pour obtenir une licence, veuillez contacter Adonie SAS a l'adresse: info@ecopresto.com
 * ...........................................................................
 *
 *  @package ec_ecopresto
-*  @author Arthur Revenaz
-*  @copyright Copyright (c) 2010-2014 S.A.R.L Ether Création (http://www.ethercreation.com)
+*  @author Adonie SAS - Ecopresto | Arthur Revenaz jusqu'à la version 2.10 
+*  @version 2.2
+*  @copyright Copyright (c) Adonie SAS
 *  @license Commercial license
 */
 
@@ -41,6 +42,8 @@ if (Tools::getValue('ec_token') != $catalog->getInfoEco('ECO_TOKEN'))
 	header('Location: ../');
 	exit;
 }
+$htmldebug .= '<html><body style="font-family:arial"><h3>Cron - Commandes</h3><ul>';
+$htmldebug .= '<li>Début du traitement '.date('m/d/Y - H:i').'</li>';
 
 if (isset($idcS) && $idcS != 0)
 	$idc = $idcS;
@@ -48,13 +51,14 @@ else
 	$idc = (Tools::getValue('idc')?Tools::getValue('idc'):0);
 
 $server = $catalog->getInfoEco('ECO_URL_COM');
-
+$iteration = 0;
 if ($catalog->tabConfig['IMPORT_AUTO'] == 1 || (isset($idcS) && $idcS != 0))
 {
 	$commande = $catalog->getOrders($idc);
-
+	$htmldebug .= '<li>Début du traitement des commandes, OK</li>';
 	foreach ($commande as $com)
 	{
+		$iteration ++;
 		$resu = '<gen>';
 		$reqExp = array();
 		$TotCom = Db::getInstance()->getRow('SELECT SUM(`product_quantity`) AS SPQ, `tax_rate`, SUM(`product_price`) AS SPP, SUM(`product_quantity`*`product_price`) AS STT
@@ -141,6 +145,11 @@ if ($catalog->tabConfig['IMPORT_AUTO'] == 1 || (isset($idcS) && $idcS != 0))
 		}
 	}
 }
+$htmldebug .= '<li>Traitement commandes, OK. Itérations: '.$iteration.'</li>';
 
 $catalog->UpdateUpdateDate('DATE_ORDER');
 $catalog->getInfoPdt();
+
+$htmldebug .= '<li>Fin du traitement '.date('m/d/Y - H:i').'</li>';
+if (Tools::getValue('debug'))
+	echo $htmldebug;
