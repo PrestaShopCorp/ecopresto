@@ -18,8 +18,8 @@
 * ...........................................................................
 *
 *  @package ec_ecopresto
-*  @author Adonie SAS - Ecopresto | Arthur Revenaz jusqu'à la version 2.10 
-*  @version 2.2
+*  @author    Adonie SAS - Ecopresto | Arthur Revenaz jusqu'à la version 2.10 
+*  @version    2.2
 *  @copyright Copyright (c) Adonie SAS
 *  @license Commercial license
 */
