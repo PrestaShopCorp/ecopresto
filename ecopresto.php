@@ -18,8 +18,8 @@
 * ...........................................................................
 *
 *  @package ec_ecopresto
-*  @author Arthur Revenaz
-*  @copyright Copyright (c) 2010-2014 S.A.R.L Ether Création (http://www.ethercreation.com)
+*  @author     Arthur Revenaz
+*  @copyright    Copyright (c) 2010-2014 S.A.R.L Ether Création (http://www.ethercreation.com)
 *  @license Commercial license
 */
 
