@@ -293,8 +293,15 @@ class ecopresto extends Module{
 			}
 		}
 		if (Tools::isSubmit('creer_table_v220')) {
-			$catalog->creer_table_v220();
-			$output .= $this->displayConfirmation($this->l('Les tables de la version 2.2.0 ont été installées.'));
+			$isUptodate = $catalog->creer_table_v220();
+			if ($isUptodate)
+				$output .= $this->displayConfirmation($this->l('Les tables de la version 2.2.0 ont été installées.'));
+			else 
+				$output .= $this->displayError($this->l('Une erreur est survenue lors de la mise à jour des tables à la version 2.2.0:').'<br/>'.$isUptodate);
+		}
+		if (Tools::isSubmit('check_doublon_csv')) {
+			$checkdoublon = $catalog->check_doublon_csv();
+			$output .= $this->displayConfirmation($this->l('Résultat de la vérification des doublons :').'<br/>'.$checkdoublon);
 		}
 		/*
 		if (Tools::isSubmit('enregistre_selection_produit')) {
@@ -995,7 +1002,20 @@ class ecopresto extends Module{
 			$html .= '<li><span style="color:orange">'.$this->l('Le fichier tracking.xml n\'existe pas.').'</span></li>';
 		$html .= '</ul></ul>';
 		$html .= '</div>';
-
+		
+		$html .= '<fieldset><legend>'.$this->l('Forcer la mise à jour SQL').'</legend>';
+		$html .= '<form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_lang" method="post">';
+		$html .= '<p>'.$this->l('Utilisez ce bouton uniquement sur invitation du service technique Ecopresto. Vous allez recréer les tables SQL liées à la version 2.2.0.').'</p>';
+		$html .= '<p><input type="submit" class="button" name="creer_table_v220" value="'.$this->l('Forcer la mise à jour SQL').'" /></p>';
+		$html .= '</form>';
+		$html .= '</fieldset>';
+		
+		$html .= '<fieldset><legend>'.$this->l('Checker les doublons CSV').'</legend>';
+		$html .= '<form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_lang" method="post">';
+		$html .= '<p>'.$this->l('Utilisez ce bouton uniquement sur invitation du service technique Ecopresto. La présence de doublons dans le fichier CSV peut entrainer des problèmes dans l\'import initial des données).'</p>';
+		$html .= '<p><input type="submit" class="button" name="check_doublon_csv" value="'.$this->l('Vérifier la présence de doublons').'" /></p>';
+		$html .= '</form>';
+		$html .= '</fieldset>';
 
 
 		$html .= '</div>';
