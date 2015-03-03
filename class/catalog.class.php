@@ -1229,9 +1229,9 @@ class Catalog
 		`importbrut` tinyint(1) NOT NULL DEFAULT 0
 		);
 		DELETE FROM `'._DB_PREFIX_.'ec_ecopresto_configuration` WHERE `name`="NB_LIGNE_IMPORT";
-		INSERT INTO `'._DB_PREFIX_.'ec_ecopresto_configuration`(`name`, `value`, `id_shop`) VALUES (`NB_LIGNE_IMPORT`,5000,1);';
+		INSERT INTO `'._DB_PREFIX_.'ec_ecopresto_configuration`(`name`, `value`, `id_shop`) VALUES ("NB_LIGNE_IMPORT",5000,1);';
 		if (!Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql_v220))
-			return = 'Erreur SQL creer_table_v220: '.$sql_v220;
+			return 'Erreur SQL creer_table_v220: '.$sql_v220;
 		else
 			return true;
 	}
@@ -1246,6 +1246,6 @@ class Catalog
 			FROM `'._DB_PREFIX_.'ec_ecopresto_cataloguebrut` 
 			GROUP BY reference_attribute
 			HAVING COUNT(reference_attribute) > 1';
-		return Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql_doublon);
+		return Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql_doublon);
 	}
 }
