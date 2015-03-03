@@ -284,6 +284,17 @@ class ecopresto extends Module{
 						$output .= $this->displayError($this->l('Une erreur est survenue lors de la finalisation du traitement des produits. Essayez à nouveau.'));
 				}
 			}
+			//Affichage des erreurs SQL, le cas échéant:
+			if (count($tabErreur) > 0) {
+				$liste_erreur;
+				foreach ($tabErreur as $erreur)
+					$liste_erreur .='<li>'.$erreur.'</li>';
+				$output .= $this->displayError('Erreur SQL rencontrées : <ul>'.$liste_erreur.'</ul>');
+			}
+		}
+		if (Tools::isSubmit('creer_table_v220')) {
+			$catalog->creer_table_v220();
+			$output .= $this->displayConfirmation($this->l('Les tables de la version 2.2.0 ont été installées.'));
 		}
 		/*
 		if (Tools::isSubmit('enregistre_selection_produit')) {
@@ -317,6 +328,8 @@ class ecopresto extends Module{
 			$onglet = "parametres";
         if (Tools::isSubmit('maj_catalogue_ecopresto') || Tools::isSubmit('setCatalogBrutToEcopresto') || Tools::isSubmit('enregistre_selection_produit'))
         	$onglet = "catalogue";
+        if (Tools::isSubmit('creer_table_v220'))
+        	$onglet = "aide";
 		
 		
 		$nbTot = Db::getInstance()->getValue('SELECT count(distinct(`supplier_reference`)) FROM  `'._DB_PREFIX_.'product` p, `'._DB_PREFIX_.'ec_ecopresto_product_shop` ps WHERE p.`supplier_reference` = ps.`reference`');
