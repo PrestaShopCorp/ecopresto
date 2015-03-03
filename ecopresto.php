@@ -335,7 +335,7 @@ class ecopresto extends Module{
 			$onglet = "parametres";
         if (Tools::isSubmit('maj_catalogue_ecopresto') || Tools::isSubmit('setCatalogBrutToEcopresto') || Tools::isSubmit('enregistre_selection_produit'))
         	$onglet = "catalogue";
-        if (Tools::isSubmit('creer_table_v220'))
+        if (Tools::isSubmit('creer_table_v220') || Tools::isSubmit('check_doublon_csv'))
         	$onglet = "aide";
 		
 		
@@ -1012,7 +1012,7 @@ class ecopresto extends Module{
 		
 		$html .= '<fieldset><legend>'.$this->l('Checker les doublons CSV').'</legend>';
 		$html .= '<form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_lang" method="post">';
-		$html .= '<p>'.$this->l('Utilisez ce bouton uniquement sur invitation du service technique Ecopresto. La présence de doublons dans le fichier CSV peut entrainer des problèmes dans l\'import initial des données).'</p>';
+		$html .= '<p>'.$this->l('Utilisez ce bouton uniquement sur invitation du service technique Ecopresto. La présence de doublons dans le fichier CSV peut entrainer des problèmes dans l\'import initial des données. L\'interprétation du résultat est possible par le service technique Ecopresto uniquement.').'</p>';
 		$html .= '<p><input type="submit" class="button" name="check_doublon_csv" value="'.$this->l('Vérifier la présence de doublons').'" /></p>';
 		$html .= '</form>';
 		$html .= '</fieldset>';
