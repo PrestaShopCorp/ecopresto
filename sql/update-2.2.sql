@@ -43,6 +43,6 @@ CREATE TABLE IF NOT EXISTS `PREFIX_ec_ecopresto_cataloguebrut` (
 `ean13` varchar(25) NOT NULL,
 `weight` varchar(25) NOT NULL,
 `pmvc` varchar(25) NOT NULL,
-`importbrut` tinyint(1) NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+`importbrut` tinyint(1) NOT NULL DEFAULT 0
+);
 INSERT INTO `PREFIX_ec_ecopresto_configuration`(`name`, `value`, `id_shop`) VALUES ('NB_LIGNE_IMPORT','5000',1);
