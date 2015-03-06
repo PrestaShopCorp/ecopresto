@@ -1001,7 +1001,7 @@ class ecopresto extends Module{
 		} else 
 			$html .= '<li><span style="color:orange">'.$this->l('Le fichier tracking.xml n\'existe pas.').'</span></li>';
 		$html .= '</ul></ul>';
-		$html .= '</div>';
+		
 		
 		$html .= '<fieldset><legend>'.$this->l('Forcer la mise à jour SQL').'</legend>';
 		$html .= '<form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_lang" method="post">';
@@ -1017,7 +1017,8 @@ class ecopresto extends Module{
 		$html .= '</form>';
 		$html .= '</fieldset>';
 
-
+		$html .= '</div>';
+		
 		$html .= '</div>';
 
 		$html .= '<div class="footermodeco">
