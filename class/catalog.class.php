@@ -963,7 +963,7 @@ class Catalog
 	 * @param aucun
 	 * @return selon résultat, erreur ou nombre de ligne restant à traiter
 	 */
-	public function setCatalogBrutToEcopresto() {
+	public function setCatalogBrutToEcopresto(&$tabErreur) {
 		//Récupérer le nombre de ligne à traiter, remplacer par une valeur par défaut si trop grand ou texte
 		$nbligne = $this->tabConfig['NB_LIGNE_IMPORT'];
 		if ((int)$nbligne > 100000 || (int)$nbligne == 0) {
@@ -971,7 +971,7 @@ class Catalog
 		}
 		
 		//chercher le nombre de ligne restant à traiter
-		$tabEtat = $this->etatCatalogBrutToEcopresto(&$tabErreur);
+		$tabEtat = $this->etatCatalogBrutToEcopresto();
 		//Si premier passage, supprimer les données présentes dans le catalogue actuel
 		if ($tabEtat[0] == $tabEtat[2]) {
 			$this->deleteData();
