@@ -935,7 +935,8 @@ class Catalog
 			return false;
 		else 
 			return true;
-	}	
+	}
+	
 	/**
 	 * Enregistre le fichier CSV dans une table temporaire
 	 *
@@ -943,8 +944,8 @@ class Catalog
 	 * @param aucun
 	 * @return boolean false si erreur
 	 */
-	public function setCatalogCSVMySQL(){
-
+	public function setCatalogCSVMySQL()
+	{
 		$sql = "LOAD DATA LOCAL INFILE '"._PS_ROOT_DIR_."/modules/ecopresto/files/".$this->fichierImport."' 
 				INTO TABLE "._DB_PREFIX_."ec_ecopresto_cataloguebrut 
 				CHARACTER SET utf8
@@ -956,22 +957,230 @@ class Catalog
 			return false;
 		else 
 			return true;
-	}	
+	}
+	/**
+	 * Enregistre le fichier CSV dans une table temporaire, via un parse PHP
+	 *
+	 *
+	 * @param aucun
+	 * @return boolean false si erreur
+	 */
+	public function setCatalogCSVMySQL_Parsephp(&$tabErreur)
+	{
+		//Lire la dernière position du pointeur, ou prendre au début si aucune ligne traitée
+		$tabEtat = $this->etatCatalogBrutToEcopresto();
+		if ($tabEtat[0] == $tabEtat[2])
+			$pointeur = 0;
+		else
+			$pointeur = $this->getInfoEco('etape1_pointeur');
+		
+		//$pointeur = 0;
+		$iteration_max = $this->getInfoEco('etape1_ligneatraiter');
+		if ($iteration_max < 100 || $iteration_max > 100000)
+			$iteration_max = 5000;
+		
+		$handle = fopen(_PS_ROOT_DIR_."/modules/ecopresto/files/".$this->fichierImport, 'r');
+		fseek($handle, $pointeur);
+		$res = "resultat : ";
+		$i = 0;
+		while ((($data = fgetcsv($handle, 10000, ';')) !== false) && ($i < $iteration_max))
+		{
+			$i++;
+			
+			$sql_catalogbrut = "INSERT INTO `"._DB_PREFIX_."ec_ecopresto_cataloguebrut` (`category_1`, `category_2`, `category_3`, `category_4`, `category_5`, `ss_category_1`, `ss_category_2`, `ss_category_3`, `ss_category_4`, `ss_category_5`, `reference`, `reference_attribute`, `manufacturer`, `attribute_1`, `attribute_2`, `attribute_3`, `attribute_4`, `attribute_5`, `name_1`, `name_2`, `name_3`, `name_4`, `name_5`, `description_short_1`, `description_short_2`, `description_short_3`, `description_short_4`, `description_short_5`, `description_1`, `description_2`, `description_3`, `description_4`, `description_5`, `price`, `image_1`, `image_2`, `image_3`, `image_4`, `image_5`, `image_6`, `rate`, `ean13`, `weight`, `pmvc`, `importbrut`) VALUES (
+			'".pSQL($data[0])."', 
+			'".pSQL($data[1])."', 
+			'".pSQL($data[2])."', 
+			'".pSQL($data[3])."', 
+			'".pSQL($data[4])."', 
+			'".pSQL($data[5])."', 
+			'".pSQL($data[6])."', 
+			'".pSQL($data[7])."', 
+			'".pSQL($data[8])."', 
+			'".pSQL($data[9])."', 
+			'".pSQL($data[10])."', 
+			'".pSQL($data[11])."', 
+			'".pSQL($data[12])."', 
+			'".pSQL($data[13])."', 
+			'".pSQL($data[14])."', 
+			'".pSQL($data[15])."', 
+			'".pSQL($data[16])."', 
+			'".pSQL($data[17])."', 
+			'".pSQL($data[18])."', 
+			'".pSQL($data[19])."', 
+			'".pSQL($data[20])."', 
+			'".pSQL($data[21])."', 
+			'".pSQL($data[22])."', 
+			'".pSQL($data[23])."', 
+			'".pSQL($data[24])."', 
+			'".pSQL($data[25])."', 
+			'".pSQL($data[26])."', 
+			'".pSQL($data[27])."', 
+			'".pSQL($data[28])."', 
+			'".pSQL($data[29])."', 
+			'".pSQL($data[30])."', 
+			'".pSQL($data[31])."', 
+			'".pSQL($data[32])."', 
+			'".pSQL($data[33])."', 
+			'".pSQL($data[34])."', 
+			'".pSQL($data[35])."', 
+			'".pSQL($data[36])."', 
+			'".pSQL($data[37])."', 
+			'".pSQL($data[38])."', 
+			'".pSQL($data[39])."', 
+			'".pSQL($data[40])."', 
+			'".pSQL($data[41])."', 
+			'".pSQL($data[42])."', 
+			'".pSQL($data[43])."', 
+			'0');";
+			if (!Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql_catalogbrut))
+				$tabErreur[] = 'Erreur SQL CatalogBrut: '.$sql_catalogbrut.' - Itération : '.$i;
+			//$res .= $data[10].' - ';
+			//Mettre à jour le pointeur
+			$this->mettreajourInfoEco('etape1_pointeur', ftell($handle));
+		}
+		return true;
+	}
+	/**
+	 * Enregistre le fichier CSV dans les tables catalogue et attributs, via un parse PHP
+	 *
+	 *
+	 * @param aucun
+	 * @return boolean false si erreur
+	 */
+	public function setCatalogCSVtoEcopresto_parsephp(&$tabErreur)
+	{
+		//Lire la dernière position du pointeur, ou prendre au début si aucune ligne traitée
+		$tabEtat = $this->etatCatalogBrutToEcopresto();
+		
+		$pointeur = $this->getInfoEco('pointeurcsv');
+		//Si premier passage, supprimer les données présentes dans le catalogue actuel
+		if ($pointeur == 0) {
+			$this->deleteData();
+			//Supprimer les tables et les attributs ?
+			$this->deleteDataBrut();
+		}
+		
+		$tab_Attributes = array();
+		//$pointeur = 0;
+		$iteration_max = $this->getInfoEco('nbligneatraitercsv');
+		if ($iteration_max < 100 || $iteration_max > 100000)
+			$iteration_max = 5000;
+		
+		
+		$handle = fopen(_PS_ROOT_DIR_."/modules/ecopresto/files/".$this->fichierImport, 'r');
+		fseek($handle, $pointeur);
+		$i = 0;
+		while ((($data = fgetcsv($handle, 10000, ';')) !== false) && ($i < $iteration_max))
+		{
+			
+			$i++;
+			if ($i > 1) {
+				//Requête pour insertion dans la table produit :
+				$sql_catalog = "INSERT INTO  "._DB_PREFIX_."ec_ecopresto_catalog (`category_1` ,`category_2` ,`category_3` ,`category_4` ,`category_5` ,`ss_category_1` ,`ss_category_2` ,`ss_category_3` ,`ss_category_4` ,`ss_category_5` ,`name_1` ,`name_2` ,`name_3` ,`name_4` ,`name_5` ,`reference` ,`manufacturer` ,`description_short_1` ,`description_short_2` ,`description_short_3` ,`description_short_4` ,`description_short_5` ,`description_1` ,`description_2` ,`description_3` ,`description_4` ,`description_5` ,`image_1` ,`image_2` ,`image_3` ,`image_4` ,`image_5` ,`image_6` ,`rate` ,`price` ,`ean13` ,`weight` ,`pmvc`) VALUES (
+				'".pSQL($data[0])."' ,
+				'".pSQL($data[1])."' ,
+				'".pSQL($data[2])."' ,
+				'".pSQL($data[3])."' ,
+				'".pSQL($data[4])."' ,
+				'".pSQL($data[5])."' ,
+				'".pSQL($data[6])."' ,
+				'".pSQL($data[7])."' ,
+				'".pSQL($data[8])."' ,
+				'".pSQL($data[9])."' ,
+				'".pSQL($data[18])."' ,
+				'".pSQL($data[19])."' ,
+				'".pSQL($data[20])."' ,
+				'".pSQL($data[21])."' ,
+				'".pSQL($data[22])."' ,
+				'".pSQL($data[10])."' ,
+				'".pSQL($data[12])."' ,
+				'".pSQL($data[23])."' ,
+				'".pSQL($data[24])."' ,
+				'".pSQL($data[25])."' ,
+				'".pSQL($data[26])."' ,
+				'".pSQL($data[27])."' ,
+				'".pSQL($data[28])."' ,
+				'".pSQL($data[29])."' ,
+				'".pSQL($data[30])."' ,
+				'".pSQL($data[31])."' ,
+				'".pSQL($data[32])."' ,
+				'".pSQL($data[34])."' ,
+				'".pSQL($data[35])."' ,
+				'".pSQL($data[36])."' ,
+				'".pSQL($data[37])."' ,
+				'".pSQL($data[38])."' ,
+				'".pSQL($data[39])."' ,
+				'".pSQL($data[40])."' ,
+				'".pSQL($data[33])."' ,
+				'".pSQL($data[41])."' ,
+				'".pSQL($data[42])."' ,
+				'".pSQL($data[43])."');";
+				if (!Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql_catalog))
+					$tabErreur[] = 'Erreur SQL Catalog: '.$sql_catalog.'<br/>Itération CSV: '.$i;
+				
+				if ($data[11] != '' && $data[10] != $data[11]) {
+					//Requête pour insertion dans la table attributs :
+					$sql_attribute = "INSERT INTO  "._DB_PREFIX_."ec_ecopresto_catalog_attribute (`reference_attribute` ,`reference` ,`price` ,`pmvc` ,`ean13` ,`weight` ,`attribute_1` ,`attribute_2` ,`attribute_3` ,`attribute_4` ,`attribute_5`) VALUES (
+					'".pSQL($data[11])."',  
+					'".pSQL($data[10])."',  
+					'".pSQL($data[33])."',  
+					'".pSQL($data[43])."',  
+					'".pSQL($data[41])."',  
+					'".pSQL($data[42])."',  
+					'".pSQL($data[13])."',  
+					'".pSQL($data[14])."',  
+					'".pSQL($data[15])."',  
+					'".pSQL($data[16])."',  
+					'".pSQL($data[17])."');";
+					if (!Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql_attribute))
+						$tabErreur[] = 'Erreur SQL Attribute: '.$sql_attribute.'<br/>Itération CSV: '.$i;
+				}
+				
+				//Construire la liste des attributs : 
+				if ($data[13] != '')
+				{
+					$att = $data[13];
+					$explode_Att = explode('|', $att);
+					foreach ($explode_Att as $lst_Att)
+					{
+						list($name_, $val_) = explode(':', $lst_Att);
+						$name = ltrim(trim($name_));
+						//On inscrit dans le tableau l'attribut sous sa propre clef, on évite les doublons ainsi
+						$tab_Attributes[$name] = $name;
+					}
+				}
+				if ($data[40] != '')
+					array_push($this->tabTVA, $data[40]);
+				//Mettre à jour le pointeur
+				$this->mettreajourInfoEco('pointeurcsv', ftell($handle));
+			}
+			//insérer la liste des attributs
+			$this->tabAttributes = $tab_Attributes;
+			$this->insertAttributes();
+			$this->matchAttributes();
+			//insérer la liste des taux de TVA
+			$tabtva = $this->tabTVA;
+			$this->tabTVA = array_unique($tabtva);
+			$this->matchTax();
+		}
+		return ftell($handle);
+	}
 	/*
 	 * setCatalogBrutToEcopresto enregistre les données de la table cataloguebrut vers les tables permettant
 	 * de sélectionner les produits Ecopresto. Le 
 	 * @param aucun
 	 * @return selon résultat, erreur ou nombre de ligne restant à traiter
 	 */
-	public function setCatalogBrutToEcopresto(&$tabErreur) {
+	public function setCatalogBrutToEcopresto() {
 		//Récupérer le nombre de ligne à traiter, remplacer par une valeur par défaut si trop grand ou texte
 		$nbligne = $this->tabConfig['NB_LIGNE_IMPORT'];
 		if ((int)$nbligne > 100000 || (int)$nbligne == 0) {
 			$nbligne = 2000;
 		}
-		
 		//chercher le nombre de ligne restant à traiter
 		$tabEtat = $this->etatCatalogBrutToEcopresto();
+		
 		//Si premier passage, supprimer les données présentes dans le catalogue actuel
 		if ($tabEtat[0] == $tabEtat[2]) {
 			$this->deleteData();
@@ -1026,7 +1235,7 @@ class Catalog
 			'".pSQL($data['weight'])."' ,
 			'".pSQL($data['pmvc'])."');";
 			if (!Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql_catalog))
-				$tabErreur[] = 'SQL Catalog: '.$sql_catalog;
+				return false;
 				
 			if ($data['reference_attribute'] != '' && $data['reference'] != $data['reference_attribute']) {
 				//Requête pour insertion dans la table attributs :
@@ -1043,12 +1252,12 @@ class Catalog
 				'".pSQL($data['attribute_4'])."',  
 				'".pSQL($data['attribute_5'])."');";
 				if (!Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql_attribute))
-					$tabErreur[] = 'SQL Attribute: '.$sql_attribute;
+					return false;
 			}
 			
 			$sql_updatecataloguebrut = 'UPDATE `'._DB_PREFIX_.'ec_ecopresto_cataloguebrut` SET importbrut=1 WHERE `reference_attribute`="'.pSQL($data['reference_attribute']).'"';
 			if (!Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql_updatecataloguebrut))
-				$tabErreur[] = 'SQL Update Catalog Brut: '.$sql_updatecataloguebrut;
+					return false;
 			
 			//Construire la liste des attributs : 
 			if ($data['attribute_1'] != '')
@@ -1112,8 +1321,16 @@ class Catalog
 		$tabEtat[3] = (int)($tabEtat[0] / $nbligne + 1);
 		return $tabEtat;
 	}
-	
-	
+	/*
+	 * etatParseCatalogue renvoi le pourcentage de traitement du fichier catalogue.csv, en fonction de sa taille et de la dernière position du pointeur
+	 * @param aucun
+	 * @return int
+	 */
+	public function etatParseCatalogue()
+	{
+		return round($this->getInfoEco('pointeurcsv') * 100 / filesize(_PS_ROOT_DIR_.'/modules/ecopresto/files/catalogue.csv'));
+	}
+				
 	public function GetDereferencement()
 	{
 		$domain = Configuration::get('PS_SHOP_DOMAIN');
@@ -1173,79 +1390,5 @@ class Catalog
 	public function UpdateDereferencement($ref)
 	{
 		Db::getInstance()->execute('UPDATE `'._DB_PREFIX_.'ec_ecopresto_product_deleted` SET `status`= 1 WHERE `reference`="'.pSQL($ref).'"');
-	}
-	/**
-	 * Créé la table catalogbrut et ajoute une ligne à la conf
-	 *
-	 * @param aucun
-	 * @return boolean false si erreur
-	 */
-	public function creer_table_v220() {
-		$sql_v220 = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'ec_ecopresto_cataloguebrut` (
-		`category_1` varchar(255) NOT NULL,
-		`category_2` varchar(255) NOT NULL,
-		`category_3` varchar(255) NOT NULL,
-		`category_4` varchar(255) NOT NULL,
-		`category_5` varchar(255) NOT NULL,
-		`ss_category_1` varchar(255) NOT NULL,
-		`ss_category_2` varchar(255) NOT NULL,
-		`ss_category_3` varchar(255) NOT NULL,
-		`ss_category_4` varchar(255) NOT NULL,
-		`ss_category_5` varchar(255) NOT NULL,
-		`reference` varchar(255) NOT NULL,
-		`reference_attribute` varchar(255) NOT NULL,
-		`manufacturer` varchar(255) NOT NULL,
-		`attribute_1` text NOT NULL,
-		`attribute_2` text NOT NULL,
-		`attribute_3` text NOT NULL,
-		`attribute_4` text NOT NULL,
-		`attribute_5` text NOT NULL,
-		`name_1` varchar(255) NOT NULL,
-		`name_2` varchar(255) NOT NULL,
-		`name_3` varchar(255) NOT NULL,
-		`name_4` varchar(255) NOT NULL,
-		`name_5` varchar(255) NOT NULL,
-		`description_short_1` text NOT NULL,
-		`description_short_2` text NOT NULL,
-		`description_short_3` text NOT NULL,
-		`description_short_4` text NOT NULL,
-		`description_short_5` text NOT NULL,
-		`description_1` text NOT NULL,
-		`description_2` text NOT NULL,
-		`description_3` text NOT NULL,
-		`description_4` text NOT NULL,
-		`description_5` text NOT NULL,
-		`price` varchar(25) NOT NULL,
-		`image_1` text NOT NULL,
-		`image_2` text NOT NULL,
-		`image_3` text NOT NULL,
-		`image_4` text NOT NULL,
-		`image_5` text NOT NULL,
-		`image_6` text NOT NULL,
-		`rate` varchar(25) NOT NULL,
-		`ean13` varchar(25) NOT NULL,
-		`weight` varchar(25) NOT NULL,
-		`pmvc` varchar(25) NOT NULL,
-		`importbrut` tinyint(1) NOT NULL DEFAULT 0
-		);
-		DELETE FROM `'._DB_PREFIX_.'ec_ecopresto_configuration` WHERE `name`="NB_LIGNE_IMPORT";
-		INSERT INTO `'._DB_PREFIX_.'ec_ecopresto_configuration`(`name`, `value`, `id_shop`) VALUES ("NB_LIGNE_IMPORT",5000,1);';
-		if (!Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql_v220))
-			return 'Erreur SQL creer_table_v220: '.$sql_v220;
-		else
-			return true;
-	}
-	/**
-	 * Créé la table catalogbrut et ajoute une ligne à la conf
-	 *
-	 * @param aucun
-	 * @return boolean false si erreur
-	 */
-	public function check_doublon_csv(){
-		$sql_doublon = 'SELECT   COUNT(reference_attribute) AS nb_doublon, reference_attribute
-			FROM `'._DB_PREFIX_.'ec_ecopresto_cataloguebrut` 
-			GROUP BY reference_attribute
-			HAVING COUNT(reference_attribute) > 1';
-		return Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql_doublon);
 	}
 }
