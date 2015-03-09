@@ -29,6 +29,13 @@ require_once dirname(__FILE__).'/class/reference.class.php';
 
 if (!defined('_CAN_LOAD_FILES_'))
 	exit;
+/**
+ * Lecture du fichier ligne à ligne
+ *
+ *
+ * @param aucun
+ * @return boolean false si erreur
+ */
 
 class ecopresto extends Module{
 	private $_html = '';
@@ -238,6 +245,59 @@ class ecopresto extends Module{
 			$catalog->mettreajourInfoEco('isBienvenue', "1");
 			$output .= $this->displayConfirmation($this->l('Le message de bienvenue ne sera plus affiché.'));
 		}
+		if (Tools::isSubmit('maj_import')) {
+			$catalog->mettreajourInfoEco('nbligneatraitercsv', Tools::getValue('nbligneatraitercsv'));
+			$output .= $this->displayConfirmation($this->l('Les paramètres d\'import sont correctement mis à jour.'));
+		}
+		// Méthode Parse CSV
+		if (Tools::isSubmit('maj_catalogue_ecopresto'))
+		{
+			$catalog->mettreajourInfoEco('isTableCatalogueBrut', "0");
+			$catalog->mettreajourInfoEco('isImportCatalogue', "0");
+			$catalog->mettreajourInfoEco('isProduitEnregistre', "0");
+			$catalog->mettreajourInfoEco('isProduitImportPresta', "0");
+			$catalog->mettreajourInfoEco('pointeurcsv', 0);
+			
+			$var = $catalog->GetCatalogCSV();
+	
+			if (!$var)
+				$output .= $this->displayError($this->l('Erreur lors du téléchargement du catalogue. Essayez à nouveau.'));
+				
+			else {
+				$var2 = $catalog->flushCatalogCSVMySQL(); 
+				if (!$var2)
+					$output .= $this->displayError($this->l('Erreur lors de l\'effacement de la table temporaire. Essayez à nouveau.'));
+				else {
+					$catalog->mettreajourInfoEco('isTableCatalogueBrut', "1");
+					$output .= $this->displayConfirmation(sprintf($this->l('Catalogue téléchargé et tables intermédiaires vidées. Passez à l\'étape 2.')));
+				}
+					 
+			}
+				
+		}
+		if (Tools::isSubmit('setCatalogBrutToEcopresto'))
+		{
+			$var = $catalog->setCatalogCSVtoEcopresto_parsephp(); 
+			if (!$var)
+				$output .= $this->displayError($this->l('Une erreur est survenue lors du traitement des produits. Essayez à nouveau.'));
+			else {
+				$traitement = $catalog->etatParseCatalogue();
+				if ($traitement == 100) {
+					$catalog->mettreajourInfoEco('isImportCatalogue', "1");
+					$output .= $this->displayConfirmation($this->l('Cette étape est terminée. Vous pouvez sélectionner vos produits.'));
+				}
+				else
+					$output .= $this->displayConfirmation($traitement.$this->l('% du fichier catalogue a été traité. Renouvelez cette étape.'));
+			}
+			//Affichage des erreurs SQL, le cas échéant:
+			if (count($tabErreur) > 0) {
+				$liste_erreur;
+				foreach ($tabErreur as $erreur)
+					$liste_erreur .='<li>'.$erreur.'</li>';
+				$output .= $this->displayError('Erreurs rencontrées : <ul>'.$liste_erreur.'</ul>');
+			}
+		}
+		/* Methode LOAD DATA
 		if (Tools::isSubmit('maj_catalogue_ecopresto'))
 		{
 			$catalog->mettreajourInfoEco('isTableCatalogueBrut', "0");
@@ -265,8 +325,8 @@ class ecopresto extends Module{
 				} 
 			}
 				
-		}
-		
+		}*/
+		/* Methode avec LOAD DATA FILE - ETAPE 2 
 		if (Tools::isSubmit('setCatalogBrutToEcopresto'))
 		{
 			$var = $catalog->setCatalogBrutToEcopresto(); 
@@ -292,6 +352,8 @@ class ecopresto extends Module{
 				$output .= $this->displayError('Erreur SQL rencontrées : <ul>'.$liste_erreur.'</ul>');
 			}
 		}
+		*/
+		/*
 		if (Tools::isSubmit('creer_table_v220')) {
 			$isUptodate = $catalog->creer_table_v220();
 			if ($isUptodate)
@@ -303,6 +365,7 @@ class ecopresto extends Module{
 			$checkdoublon = $catalog->check_doublon_csv();
 			$output .= $this->displayConfirmation($this->l('Résultat de la vérification des doublons :').'<br/>'.$checkdoublon);
 		}
+		*/
 		/*
 		if (Tools::isSubmit('enregistre_selection_produit')) {
 			$catalog->mettreajourInfoEco('isProduitEnregistre', "1");
@@ -331,7 +394,7 @@ class ecopresto extends Module{
 		
 		
 		//Définition de l'onglet à afficher par défaut
-		if (Tools::isSubmit('maj_tax') || Tools::isSubmit('maj_lang') || Tools::isSubmit('maj_config') || Tools::isSubmit('maj_attributes') || Tools::isSubmit('ignore_tout_avertissement_ecopresto') || Tools::isSubmit('reset_avertissement_ecopresto'))
+		if (Tools::isSubmit('maj_tax') || Tools::isSubmit('maj_lang') || Tools::isSubmit('maj_config') || Tools::isSubmit('maj_attributes') || Tools::isSubmit('ignore_tout_avertissement_ecopresto') || Tools::isSubmit('reset_avertissement_ecopresto') || Tools::isSubmit('maj_import'))
 			$onglet = "parametres";
         if (Tools::isSubmit('maj_catalogue_ecopresto') || Tools::isSubmit('setCatalogBrutToEcopresto') || Tools::isSubmit('enregistre_selection_produit'))
         	$onglet = "catalogue";
@@ -448,7 +511,7 @@ class ecopresto extends Module{
 			{
 				$html .= '<div class="ec_inline step1ok"><form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_attributes" method="post">';
 				$html .= '<h3>'.$this->l('Téléchargement du catalogue').'</h3>';
-				$html .= '<p><strong>'.$this->l('Etape faite').'</strong> '.$this->l('Vous avez déjà récupéré les produits Ecopresto.').'</p><input type="submit" class="button" name="maj_catalogue_ecopresto" value="'.$this->l('Mettre à jour').'" />';
+				$html .= '<p><strong>'.$this->l('Etape faite').'</strong> '.$this->l('Vous avez déjà récupéré le fichier du catalogue Ecopresto. En cliquant sur le bouton Mettre à jour, vous devrez refaire également l\'étape 2.').'</p><input type="submit" class="button" name="maj_catalogue_ecopresto" value="'.$this->l('Mettre à jour').'" />';
 				$html .= '</form></div>';
 			}
 			
@@ -460,26 +523,19 @@ class ecopresto extends Module{
 				$html .= '</form></div>';
 			}
 			elseif ($catalog->getInfoEco('isTableCatalogueBrut') && !$catalog->getInfoEco('isImportCatalogue') ){
-				$tabEtat = $catalog->etatCatalogBrutToEcopresto();
-				if ($tabEtat[1] == $tabEtat[2]) {
+				
+				if ($catalog->getInfoEco('pointeurcsv') == 0) {
 					$html .= '<div class="ec_inline step2ko"><form class="ec_inline step2" action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="import_cataloguebrut_ecopresto" method="post">';
 					$html .= '<h3>'.$this->l('Import par lot').'</h3>';
 					$html .= '<p>'.
-						$this->l('Traiter le catalogue. Cette étape se fait en plusieurs fois ').' '.
-						sprintf($this->l('(%1$d fois selon votre configuration). '), $tabEtat[3]).' '.
-						sprintf($this->l('Il reste %1$d lignes à traiter.'), $tabEtat[0]).'
-						</p>';
+					$this->l('Traiter le fichier du catalogue. Cette étape se fait en plusieurs fois (choississez le nombre de lignes à traiter dans le menu Réglages)').'</p>';
 					$html .= '<input type="submit" class="button todo" name="setCatalogBrutToEcopresto" value="'.$this->l('Commencer cette étape').'" />';
 				}
 				else {
+					$traitement = $catalog->etatParseCatalogue();
 					$html .= '<div class="ec_inline step2refresh"><form class="ec_inline step2" action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="import_cataloguebrut_ecopresto" method="post">';
 					$html .= '<h3>'.$this->l('Import par lot').'</h3>';
-					$html .= '<p>'.
-						$this->l('Vous devez encore faire cette étape ').' '.
-						sprintf($this->l('(%1$d fois selon votre configuration). '), $tabEtat[3]).' '.
-						sprintf($this->l('Il reste %1$d lignes à traiter.'), $tabEtat[0]).'
-						
-						</p>';
+					$html .= '<p>'.$this->l('Traiter le fichier du Catalogue. Cette étape est en cours. ').$traitement.$this->l('% du fichier traité.').'</p>';
 					$html .= '<input type="submit" class="button retodo" name="setCatalogBrutToEcopresto" value="'.$this->l('Continuer cette étape').'" />';
 				}
 				
@@ -495,7 +551,7 @@ class ecopresto extends Module{
 			if (!$catalog->getInfoEco('isProduitEnregistre') && !($catalog->getInfoEco('isTableCatalogueBrut') && $catalog->getInfoEco('isImportCatalogue'))){
 				$html .= '<div class="ec_inline step3ko">';
 				$html .= '<h3>'.$this->l('Sélection des produits').'</h3>';
-				$html .= '<p>'.$this->l('Vous devez avoir importé le catalogue pour choisir vos produits.').'</p>';
+				$html .= '<p>'.$this->l('Vous devez avoir importé le catalogue pour choisir vos produits. Les sélections antérieures sont conservées.').'</p>';
 				$html .= '</div>';
 			} elseif (!$catalog->getInfoEco('isProduitEnregistre') && ($catalog->getInfoEco('isTableCatalogueBrut') && $catalog->getInfoEco('isImportCatalogue'))){
 				$html .= '<div class="ec_inline step3ko">';
@@ -758,9 +814,6 @@ class ecopresto extends Module{
 					<input type="radio" name="CONFIG_ECO[IMPORT_AUTO]" value="1" '.(($catalog->tabConfig['IMPORT_AUTO'] == 1)?'checked=checked':'').' /> '.$this->l('Automatique').'
 					<input type="radio" name="CONFIG_ECO[IMPORT_AUTO]" value="0" '.(($catalog->tabConfig['IMPORT_AUTO'] == 0)?'checked=checked':'').' /> '.$this->l('Manuelle').'
 				</p>';
-		
-		$html .= '<p>'.$this->l('Nombre de ligne a traiter par lot d\'import : ').'
-					<input type="text" name="CONFIG_ECO[NB_LIGNE_IMPORT]" value="'.$catalog->tabConfig['NB_LIGNE_IMPORT'].'" /></p>';
 
 		$html .= '<p><input type="submit" class="button" name="maj_config" value="'.$this->l('Enregistrer').'" /></p>';
 		$html .= '</form>';
@@ -786,6 +839,19 @@ class ecopresto extends Module{
 		$html .= '<form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_attributes" method="post">';
 		$html .= $catalog->getAllAttributes();
 		$html .= '<p><input type="submit" class="button" name="maj_attributes" value="'.$this->l('Mise à jour attribut').'" /></p>';
+		$html .= '</form>';
+		$html .= '</fieldset>';
+		
+		
+		$iteration_max = $this->getInfoEco('nbligneatraitercsv');
+		if ($iteration_max < 100 || $iteration_max > 100000)
+			$iteration_max = 5000;
+		$html .= '<fieldset><legend>'.$this->l('Paramètres d\'import').'</legend>';
+		$html .= '<form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_attributes" method="post">';
+		$html .= '<p>L\'import du catalogue est réalisé en plusieurs étapes. A chaque étape, le programme traite un certain nombre de ligne. La configuration de votre hébergement et les paramètres PHP associés peuvent limiter le volume de ces traitements.</p>';
+		$html .= '<p>'.$this->l('Nombre de ligne a traiter par lot d\'import : ').'
+					<input type="text" name="nbligneatraitercsv" value="'.$iteration_max.'" /></p>';
+		$html .= '<p><input type="submit" class="button" name="maj_import" value="'.$this->l('Mise à jour import').'" /></p>';
 		$html .= '</form>';
 		$html .= '</fieldset>';
 		
@@ -1002,7 +1068,7 @@ class ecopresto extends Module{
 			$html .= '<li><span style="color:orange">'.$this->l('Le fichier tracking.xml n\'existe pas.').'</span></li>';
 		$html .= '</ul></ul>';
 		
-		
+		/*
 		$html .= '<fieldset><legend>'.$this->l('Forcer la mise à jour SQL').'</legend>';
 		$html .= '<form action="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'" name="form_lang" method="post">';
 		$html .= '<p>'.$this->l('Utilisez ce bouton uniquement sur invitation du service technique Ecopresto. Vous allez recréer les tables SQL liées à la version 2.2.0.').'</p>';
@@ -1016,6 +1082,7 @@ class ecopresto extends Module{
 		$html .= '<p><input type="submit" class="button" name="check_doublon_csv" value="'.$this->l('Vérifier la présence de doublons').'" /></p>';
 		$html .= '</form>';
 		$html .= '</fieldset>';
+		*/
 
 		$html .= '</div>';
 		
@@ -1035,7 +1102,7 @@ class ecopresto extends Module{
 			$html .= '<p><strong>Vous utilisez une licence de démonstration. Utilisez le menu Réglages pour saisir votre numéro de licence.</strong></p>';
 		else		
 			$html .= '<p '.(isset($tabLic[1]) && $tabLic[1] < time()?' class="aleecoef" ':'').'>'.$this->l('Date de fin d\'adhésion : ').(isset($tabLic[1])?date('d/m/Y', $tabLic[1]):'').'</p>
-				<p '.(isset($tabLic[2]) && $nbTot > $tabLic[2]?' class="aleecoef" ':'').'>'.$this->l('Nombre de produits sélectionnés / Nb de produits autorisés :').$nbTot.'/'.(isset($tabLic[2])?$tabLic[2]:'').'</p>
+				
 				'.(isset($tabLic[3])?'<p '.('www.'.Configuration::get('PS_SHOP_DOMAIN') != 'www.'.$tabLic[3] && 'www.'.Configuration::get('PS_SHOP_DOMAIN') != 'http://'.$tabLic[3] && 'www.'.Configuration::get('PS_SHOP_DOMAIN') != $tabLic[3] && Configuration::get('PS_SHOP_DOMAIN') != 'www.'.$tabLic[3] && Configuration::get('PS_SHOP_DOMAIN') != $tabLic[3] && Tools::safeOutput($catalog->tabConfig['ID_ECOPRESTO']) != 'demo123456789demo123456789demo12'?' class="aleecoef" ':'').'>'.$this->l('URL du site enregistré : ').Tools::safeOutput($tabLic[3]):'').'</p>';
 			
 				
