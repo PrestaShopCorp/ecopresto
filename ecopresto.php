@@ -48,10 +48,10 @@ class ecopresto extends Module{
 	{
 		$this->name = 'ecopresto';
 		$this->tab = 'shipping_logistics';
-		$this->version = '2.2';
+		$this->version = '2.2.0';
 		$this->need_instance = 0;
 		$this->author = 'Ecopresto';
-		$this->displayName = $this->l('Drop shipping - Ecopresto');
+		$this->displayName = $this->l('Ecopresto - Dropshipping');
 		$this->description = $this->l('Importer vos produits en Drop shipping avec Ecopresto');
 		$this->confirmUninstall = $this->l('Etes vous sur de vouloir désinstaller le module ?');
 
