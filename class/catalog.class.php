@@ -921,21 +921,6 @@ class Catalog
 			
 		return $response;
 	}
-	/**
-	 * Supprime le contenu de la table temporaire
-	 *
-	 *
-	 * @param aucun
-	 * @return boolean false si erreur
-	 */
-	public function flushCatalogCSVMySQL(){
-
-		$sql = "TRUNCATE TABLE "._DB_PREFIX_."ec_ecopresto_cataloguebrut;";
-		if (!Db::getInstance()->execute($sql))
-			return false;
-		else 
-			return true;
-	}
 	
 	/**
 	 * Enregistre le fichier CSV dans une table temporaire
