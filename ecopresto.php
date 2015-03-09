@@ -264,13 +264,8 @@ class ecopresto extends Module{
 				$output .= $this->displayError($this->l('Erreur lors du téléchargement du catalogue. Essayez à nouveau.'));
 				
 			else {
-				$var2 = $catalog->flushCatalogCSVMySQL(); 
-				if (!$var2)
-					$output .= $this->displayError($this->l('Erreur lors de l\'effacement de la table temporaire. Essayez à nouveau.'));
-				else {
-					$catalog->mettreajourInfoEco('isTableCatalogueBrut', "1");
-					$output .= $this->displayConfirmation(sprintf($this->l('Catalogue téléchargé et tables intermédiaires vidées. Passez à l\'étape 2.')));
-				}
+				$catalog->mettreajourInfoEco('isTableCatalogueBrut', "1");
+				$output .= $this->displayConfirmation(sprintf($this->l('Catalogue téléchargé et tables intermédiaires vidées. Passez à l\'étape 2.')));
 					 
 			}
 				
