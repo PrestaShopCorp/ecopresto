@@ -272,7 +272,8 @@ class ecopresto extends Module{
 		}
 		if (Tools::isSubmit('setCatalogBrutToEcopresto'))
 		{
-			$var = $catalog->setCatalogCSVtoEcopresto_parsephp(); 
+			$tabErreur = array();
+			$var = $catalog->setCatalogCSVtoEcopresto_parsephp($tabErreur); 
 			if (!$var)
 				$output .= $this->displayError($this->l('Une erreur est survenue lors du traitement des produits. Essayez à nouveau.'));
 			else {
