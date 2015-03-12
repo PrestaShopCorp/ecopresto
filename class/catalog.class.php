@@ -184,6 +184,7 @@ class Catalog
 			Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_.'ec_ecopresto_export_com` (`id_order`) VALUES ('.(int)$idorder.')');
 		else
 		{
+			//Variable $idcS utilisée dans le fichier gen_com.php
 			$idcS = $idorder;
 			include 'gen_com.php';
 		}
@@ -296,7 +297,7 @@ class Catalog
 		{
 			$istring = $i;
 			$partstring = 'category_1;category_2;category_3;category_4;category_5;ss_category_1;ss_category_2;ss_category_3;ss_category_4;ss_category_5;reference;reference_attribute;manufacturer;attribute_1;attribute_2;attribute_3;attribute_4;attribute_5;name_1;name_2;name_3;name_4;name_5;description_short_1;description_short_2;description_short_3;description_short_4;description_short_5;description_1;description_2;description_3;description_4;description_5;price;image_1;image_2;image_3;image_4;image_5;image_6;rate;ean13;weight;pmvc';
-			$retempol = Tools::strlen($istring);
+			//$retempol = Tools::strlen($istring);
 			while (Tools::strlen($istring) < 3)
 				$istring = '0'.$istring;
 
@@ -479,7 +480,7 @@ class Catalog
 	{
 		if (Tools::getValue('tax_ps') != '')
 		{
-			foreach (Tools::getValue('tax_ps') as $key => $val)
+			foreach (Tools::getValue('tax_ps') as $val)
 			{
 				$value = explode('_', $val);
 				$id_tax = Db::getInstance()->getValue('SELECT count(`id_tax_rules_group`) FROM `'._DB_PREFIX_.'ec_ecopresto_tax_shop` WHERE `id_shop`='.(int)self::getInfoEco('ID_SHOP').' AND `id_tax_eco`='.(int)$value[0]);
@@ -500,7 +501,7 @@ class Catalog
 	{
 		if (Tools::getValue('attribut_ps') != '')
 		{
-			foreach (Tools::getValue('attribut_ps') as $key => $val)
+			foreach (Tools::getValue('attribut_ps') as $val)
 			{
 				$value = explode('_', $val);
 
@@ -520,7 +521,7 @@ class Catalog
 
 	public function updateLang()
 	{
-		foreach (Tools::getValue('langECO') as $key => $val)
+		foreach (Tools::getValue('langECO') as $val)
 		{
 			$value = explode('_', $val);
 			$id_lang = Db::getInstance()->getValue('SELECT `id_lang` FROM `'._DB_PREFIX_.'ec_ecopresto_lang_shop` WHERE `id_shop`='.(int)self::getInfoEco('ID_SHOP').' AND `id_lang`='.(int)$value[0]);
