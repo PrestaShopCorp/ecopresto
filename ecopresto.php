@@ -494,7 +494,6 @@ class ecopresto extends Module{
 		
 		$html .= '<h3>'.$this->l('Catalogue Ecopresto').'</h3>';
 		
-		$afficherCatalogue = false;
 		if ($catalog->getInfoEco('isConfig')) {
 			
 			if (!$catalog->getInfoEco('isTableCatalogueBrut')){
