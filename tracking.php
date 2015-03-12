@@ -43,8 +43,8 @@ if (Tools::getValue('ec_token') != $catalog->getInfoEco('ECO_TOKEN'))
 	header('Location: ../');
 	exit;
 }
-$html .= '<html><body style="font-family:arial"><h3>Cron - Tracking</h3><ul>';
-$html .= '<li>Début du traitement '.date('m/d/Y - H:i').'</li>';
+$htmldebug = '<html><body style="font-family:arial"><h3>Cron - Tracking</h3><ul>';
+$htmldebug .= '<li>Début du traitement '.date('m/d/Y - H:i').'</li>';
 
 $trackingD = $catalog->getInfoEco('ECO_URL_TRACKING').$catalog->tabConfig['ID_ECOPRESTO'];
 $trackingL = 'files/tracking.xml';
@@ -52,7 +52,7 @@ $trackingL = 'files/tracking.xml';
 if ($download->load($trackingD) == true)
 {
 	$download->saveTo($trackingL);
-	$html .= '<li>Téléchargement, OK</li>';
+	$htmldebug .= '<li>Téléchargement, OK</li>';
 	$iteration = 0;
 	if (($handle = fopen($trackingL, 'r')) !== false) {
 		while (($data = fgetcsv($handle, 10000, ';')) !== false)
@@ -65,10 +65,10 @@ if ($download->load($trackingD) == true)
 				Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_.'ec_ecopresto_tracking` (`id_order`,`transport`,`numero`,`date_exp`,`url_exp`)
 								VALUES ('.(int)$data[0].',"'.pSQL($data[2]).'","'.pSQL($data[3]).'","'.pSQL($data[4]).'","'.pSQL($data[5]).'")');
 		}
-		$html .= '<li>Traitement tracking, OK. Itérations: '.$iteration.'</li>';
+		$htmldebug .= '<li>Traitement tracking, OK. Itérations: '.$iteration.'</li>';
 	}
 }
-$html .= '<li>Fin du traitement '.date('m/d/Y - H:i').'</li>';
+$htmldebug .= '<li>Fin du traitement '.date('m/d/Y - H:i').'</li>';
 if (Tools::getValue('debug'))
-	echo $html;
+	echo $htmldebug;
 

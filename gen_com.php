@@ -42,9 +42,10 @@ if (Tools::getValue('ec_token') != $catalog->getInfoEco('ECO_TOKEN'))
 	header('Location: ../');
 	exit;
 }
-$htmldebug .= '<html><body style="font-family:arial"><h3>Cron - Commandes</h3><ul>';
+$htmldebug = '<html><body style="font-family:arial"><h3>Cron - Commandes</h3><ul>';
 $htmldebug .= '<li>Début du traitement '.date('m/d/Y - H:i').'</li>';
 
+//Variable $idcS instanciée depuis le fichier catalog.class par exemple (voir include de gen_com.php)
 if (isset($idcS) && $idcS != 0)
 	$idc = $idcS;
 else
