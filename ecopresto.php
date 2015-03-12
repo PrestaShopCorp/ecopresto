@@ -18,7 +18,7 @@
 * ...........................................................................
 *
 *  @package ec_ecopresto
-*  @author    Adonie SAS - Ecopresto |  A.Revenaz jusqu'à la version 2.10 
+*  @author    Adonie SAS - Ecopresto
 *  @version    2.2.0
 *  @copyright Copyright (c) Adonie SAS - Ecopresto
 *  @license    Commercial license

@@ -4,7 +4,7 @@
 *
 * This source file is subject to a commercial license from Adonie SAS - Ecopresto
 * Use, copy, modification or distribution of this source file without written
-* license agreement from Adonie SAS is strictly forbidden.
+* license agreement from Adonie SAS - Ecopresto is strictly forbidden.
 * In order to obtain a license, please contact us: info@ecopresto.com
 * ...........................................................................
 * INFORMATION SUR LA LICENCE D'UTILISATION
@@ -18,11 +18,12 @@
 * ...........................................................................
 *
 *  @package ec_ecopresto
-*  @author Adonie SAS - Ecopresto | Arthur Revenaz jusqu'à la version 2.10 
-*  @version 2.2
-*  @copyright Copyright (c) Adonie SAS
-*  @license Commercial license
+*  @author    Adonie SAS - Ecopresto
+*  @version    2.2.0
+*  @copyright Copyright (c) Adonie SAS - Ecopresto
+*  @license    Commercial license
 */
+
 include dirname(__FILE__).'/../../config/config.inc.php';
 include dirname(__FILE__).'/../../init.php';
 include dirname(__FILE__).'/class/importProduct.class.php';
