@@ -1159,12 +1159,12 @@ class Catalog
 	 * @param aucun
 	 * @return selon résultat, erreur ou nombre de ligne restant à traiter
 	 */
-	public function setCatalogBrutToEcopresto() {
+	public function setCatalogBrutToEcopresto() 
+	{
 		//Récupérer le nombre de ligne à traiter, remplacer par une valeur par défaut si trop grand ou texte
 		$nbligne = $this->tabConfig['NB_LIGNE_IMPORT'];
-		if ((int)$nbligne > 100000 || (int)$nbligne == 0) {
+		if ((int)$nbligne > 100000 || (int)$nbligne == 0)
 			$nbligne = 2000;
-		}
 		//chercher le nombre de ligne restant à traiter
 		$tabEtat = $this->etatCatalogBrutToEcopresto();
 		
@@ -1291,12 +1291,12 @@ class Catalog
 	 * @param aucun
 	 * @return array
 	 */
-	public function etatCatalogBrutToEcopresto() {
+	public function etatCatalogBrutToEcopresto() 
+	{
 		//Récupérer le nombre de ligne à traiter, remplacer par une valeur par défaut si trop grand ou texte
 		$nbligne = $this->tabConfig['NB_LIGNE_IMPORT'];
-		if ((int)$nbligne > 100000 || (int)$nbligne == 0) {
+		if ((int)$nbligne > 100000 || (int)$nbligne == 0)
 			$nbligne = 2000;
-		}
 		$tabEtat = array();
 		//Lignes restantes
 		$tabEtat[0] = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('SELECT COUNT(*) FROM  `'._DB_PREFIX_.'ec_ecopresto_cataloguebrut` WHERE `importbrut` = 0', true, 0);
