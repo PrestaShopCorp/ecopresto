@@ -21,7 +21,7 @@
 *  @author    Adonie SAS - Ecopresto |  A.Revenaz jusqu'à la version 2.10 
 *  @version    2.2.0
 *  @copyright Copyright (c) Adonie SAS - Ecopresto
-*  @license   Commercial license
+*  @license    Commercial license
 */
 
 require_once dirname(__FILE__).'/class/catalog.class.php';
