@@ -4,7 +4,7 @@
 *
 * This source file is subject to a commercial license from Adonie SAS - Ecopresto
 * Use, copy, modification or distribution of this source file without written
-* license agreement from Adonie SAS is strictly forbidden.
+* license agreement from Adonie SAS - Ecopresto is strictly forbidden.
 * In order to obtain a license, please contact us: info@ecopresto.com
 * ...........................................................................
 * INFORMATION SUR LA LICENCE D'UTILISATION
@@ -18,10 +18,10 @@
 * ...........................................................................
 *
 *  @package ec_ecopresto
-*  @author Adonie SAS - Ecopresto
-*  @version 2.2
-*  @copyright Copyright (c) Adonie SAS
-*  @license Commercial license
+*  @author    Adonie SAS - Ecopresto
+*  @version    2.2.0
+*  @copyright Copyright (c) Adonie SAS - Ecopresto
+*  @license    Commercial license
 */
 
 header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
