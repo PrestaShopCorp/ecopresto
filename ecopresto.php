@@ -257,6 +257,8 @@ class ecopresto extends Module{
 			$catalog->mettreajourInfoEco('isProduitEnregistre', "0");
 			$catalog->mettreajourInfoEco('isProduitImportPresta', "0");
 			$catalog->mettreajourInfoEco('pointeurcsv', 0);
+			$catalog->deleteData();
+			$catalog->deleteDataBrut();
 			
 			$var = $catalog->GetCatalogCSV();
 	
