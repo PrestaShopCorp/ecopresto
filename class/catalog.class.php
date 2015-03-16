@@ -621,13 +621,36 @@ class Catalog
 		Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'ec_ecopresto_attribute`');
 	}
 
-	public function SetSupplier()
+	/**
+	 * Avant l'installation du module, on cherche s'il n'existe pas d'ancien "supplier" Ecopresto
+	 * Le cas échéant, on renvoi son id
+	 *
+	 * @param aucun
+	 * @return id du supplier, 0 si aucun trouvé
+	 */
+	public function verifierSupplier()
 	{
-		Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_.'supplier` (`name`,`date_add`,`date_upd`,`active`) VALUES ("'.pSQL($this->supplier).'","'.pSQL(date('Y-m-d H:i:s')).'","'.pSQL(date('Y-m-d H:i:s')).'",1)');
+		return Db::getInstance()->getValue('SELECT `id_supplier` FROM `'._DB_PREFIX_.'supplier` WHERE `name` = "ECOPRESTO"');
+	}
+	
+	/**
+	 * Enregistre l'ID du supplier et le créé si besoin
+	 * Le cas échéant, on renvoi son id
+	 *
+	 * @param aucun
+	 * @return id du supplier, 0 si aucun trouvé
+	 */
+	public function SetSupplier($idSupplier)
+	{
+		$estNouvelleInstallation = false;
+		if (!$idSupplier)
+		{
+			Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_.'supplier` (`name`,`date_add`,`date_upd`,`active`) VALUES ("'.pSQL($this->supplier).'","'.pSQL(date('Y-m-d H:i:s')).'","'.pSQL(date('Y-m-d H:i:s')).'",1)');
+			$idSupplier = Db::getInstance()->Insert_ID();
+			$estNouvelleInstallation = true;
+		}
 
-		$idSupplier = Db::getInstance()->Insert_ID();
-
-		if (($idSupplier) && ($idSupplier != 0))
+		if ($estNouvelleInstallation)
 		{
 			$all_lang = Language::getLanguages(true);
 
@@ -646,8 +669,16 @@ class Catalog
 			else
 				Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_.'ec_ecopresto_configuration` (`value`,`name`,`id_shop`) VALUES ('.(int)$idSupplier.',"PARAM_SUPPLIER",1)');
 		}
-		else
-			return false;
+		else {
+			if (version_compare(_PS_VERSION_, '1.5', '>='))
+			{
+				$all_shop = Shop::getShops(false);
+				foreach ($all_shop as $shop)
+					Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_.'ec_ecopresto_configuration` (`value`,`name`,`id_shop`) VALUES ('.(int)$idSupplier.',"PARAM_SUPPLIER",'.(int)$shop['id_shop'].')');
+			}
+			else
+				Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_.'ec_ecopresto_configuration` (`value`,`name`,`id_shop`) VALUES ('.(int)$idSupplier.',"PARAM_SUPPLIER",1)');
+		}
 		return true;
 	}
 

@@ -65,7 +65,8 @@ class ecopresto extends Module{
 			return false;
 
 		$catalog = new Catalog();
-		if (!$catalog->SetSupplier())
+		//Si on trouve un "supplier" ECOPRESTO, alors on réutilise son ID, sinon on en créé un
+		if (!$catalog->SetSupplier($catalog->verifierSupplier()))
 			return false;
 		if (!$catalog->SetTax())
 			return false;
