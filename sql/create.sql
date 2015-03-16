@@ -1,20 +1,20 @@
 /******************************************************************/
 /* CREATE                                                         */
 /******************************************************************/
-CREATE TABLE `PREFIX_ec_ecopresto_attribute` (
+CREATE TABLE IF NOT EXISTS `PREFIX_ec_ecopresto_attribute` (
  `id_attribute_eco` int(11) NOT NULL AUTO_INCREMENT,
  `value` varchar(255) NOT NULL,
  `id_lang` int(11) NOT NULL,
  PRIMARY KEY (`id_attribute_eco`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `PREFIX_ec_ecopresto_attribute_shop` (
+CREATE TABLE IF NOT EXISTS `PREFIX_ec_ecopresto_attribute_shop` (
  `id_attribute_eco` int(11) NOT NULL,
  `id_attribute` int(11) NOT NULL,
  `id_shop` int(11) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `PREFIX_ec_ecopresto_catalog` (
+CREATE TABLE IF NOT EXISTS `PREFIX_ec_ecopresto_catalog` (
  `category_1` varchar(255) NOT NULL,
  `category_2` varchar(255) NOT NULL,
  `category_3` varchar(255) NOT NULL,
@@ -56,7 +56,7 @@ CREATE TABLE `PREFIX_ec_ecopresto_catalog` (
  PRIMARY KEY (`reference`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `PREFIX_ec_ecopresto_catalog_attribute` (
+CREATE TABLE IF NOT EXISTS `PREFIX_ec_ecopresto_catalog_attribute` (
  `reference_attribute` varchar(255) NOT NULL,
  `reference` varchar(255) NOT NULL,
  `price` varchar(25) NOT NULL,
@@ -72,13 +72,13 @@ CREATE TABLE `PREFIX_ec_ecopresto_catalog_attribute` (
  KEY `reference` (`reference`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `PREFIX_ec_ecopresto_category_shop` (
+CREATE TABLE IF NOT EXISTS `PREFIX_ec_ecopresto_category_shop` (
  `name` varchar(255) NOT NULL,
  `id_category` int(11) NOT NULL,
  `id_shop` int(11) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `PREFIX_ec_ecopresto_configuration` (
+CREATE TABLE IF NOT EXISTS `PREFIX_ec_ecopresto_configuration` (
  `id_configuration` int(10) unsigned NOT NULL AUTO_INCREMENT,
  `name` varchar(32) NOT NULL,
  `value` text,
@@ -86,69 +86,69 @@ CREATE TABLE `PREFIX_ec_ecopresto_configuration` (
  PRIMARY KEY (`id_configuration`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `PREFIX_ec_ecopresto_export_com` (
+CREATE TABLE IF NOT EXISTS `PREFIX_ec_ecopresto_export_com` (
  `id` int(11) NOT NULL AUTO_INCREMENT,
  `id_order` int(11) NOT NULL,
  PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `PREFIX_ec_ecopresto_lang` (
+CREATE TABLE IF NOT EXISTS `PREFIX_ec_ecopresto_lang` (
  `id_lang_eco` int(11) NOT NULL,
  `lang` varchar(10) NOT NULL,
  PRIMARY KEY (`id_lang_eco`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `PREFIX_ec_ecopresto_lang_shop` (
+CREATE TABLE IF NOT EXISTS `PREFIX_ec_ecopresto_lang_shop` (
  `id_lang_eco` int(11) NOT NULL,
  `id_lang` int(11) NOT NULL,
  `id_shop` int(11) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `PREFIX_ec_ecopresto_product_attribute` (
+CREATE TABLE IF NOT EXISTS `PREFIX_ec_ecopresto_product_attribute` (
  `reference` varchar(50) NOT NULL,
  `id_product_attribute` int(11) NOT NULL,
  `id_shop` int(11) NOT NULL,
  PRIMARY KEY (`reference`,`id_shop`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `PREFIX_ec_ecopresto_product_deleted` (
+CREATE TABLE IF NOT EXISTS `PREFIX_ec_ecopresto_product_deleted` (
  `reference` varchar(255) NOT NULL,
  `dateDelete` varchar(255) NOT NULL,
  `status` int(11) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `PREFIX_ec_ecopresto_product_imported` (
+CREATE TABLE IF NOT EXISTS `PREFIX_ec_ecopresto_product_imported` (
  `reference` varchar(50) NOT NULL,
  `id_shop` int(11) NOT NULL,
  `imported` tinyint(1) NOT NULL,
  PRIMARY KEY (`reference`,`id_shop`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `PREFIX_ec_ecopresto_product_shop` (
+CREATE TABLE IF NOT EXISTS `PREFIX_ec_ecopresto_product_shop` (
  `reference` varchar(255) NOT NULL,
  `id_shop` int(11) NOT NULL,
  `imported` tinyint(1) NOT NULL,
  PRIMARY KEY (`reference`,`id_shop`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `PREFIX_ec_ecopresto_product_shop_temp` (
+CREATE TABLE IF NOT EXISTS `PREFIX_ec_ecopresto_product_shop_temp` (
  `reference` varchar(255) NOT NULL,
  `id_shop` int(11) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `PREFIX_ec_ecopresto_tax` (
+CREATE TABLE IF NOT EXISTS `PREFIX_ec_ecopresto_tax` (
  `id_tax_eco` int(11) NOT NULL AUTO_INCREMENT,
  `rate` varchar(10) NOT NULL,
  PRIMARY KEY (`id_tax_eco`)
 ) ENGINE=MyISAM AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
 
-CREATE TABLE `PREFIX_ec_ecopresto_tax_shop` (
+CREATE TABLE IF NOT EXISTS `PREFIX_ec_ecopresto_tax_shop` (
  `id_tax_eco` int(11) NOT NULL,
  `id_tax_rules_group` int(11) NOT NULL,
  `id_shop` int(11) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE  `PREFIX_ec_ecopresto_info` (
+CREATE TABLE IF NOT EXISTS `PREFIX_ec_ecopresto_info` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `value` varchar(255) NOT NULL,
