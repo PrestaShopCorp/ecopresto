@@ -1068,11 +1068,10 @@ class Catalog
 	 */
 	public function setCatalogCSVtoEcopresto_parsephp(&$tabErreur)
 	{
-		//Lire la dernière position du pointeur, ou prendre au début si aucune ligne traitée
-		$tabEtat = $this->etatCatalogBrutToEcopresto();
-		
+		//Lire la dernière position du pointeur, ou prendre au début si aucune ligne traitée		
 		$pointeur = $this->getInfoEco('pointeurcsv');
 		//Si premier passage, supprimer les données présentes dans le catalogue actuel
+		//Operation déjà faite à la fin de l'étape 1 
 		if ($pointeur == 0) {
 			$this->deleteData();
 			//Supprimer les tables et les attributs ?
