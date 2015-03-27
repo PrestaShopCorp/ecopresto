@@ -155,6 +155,7 @@ class ecopresto extends Module{
 		{
 			if($id_eco != 'demo123456789demo123456789demo12')
 				$catalog->mettreajourConfEco('ID_ECOPRESTO', 'demo123456789demo123456789demo12', '1');
+			Configuration::updateValue('ECOPRESTO_CONFIGURATION_OK', true);
 			return true;
 		}
 	}
