@@ -922,10 +922,6 @@ class Catalog
 	 */
 	public function GetCatalogCSV()
 	{
-		$domain = Configuration::get('PS_SHOP_DOMAIN');
-		
-		$cle = $this->tabConfig['ID_ECOPRESTO'];
-
 		$filename = $this->fichierDistant;
 		include_once _PS_ROOT_DIR_.'/modules/ecopresto/class/download.class.php';
 		$download = new DownloadBinaryFile();
