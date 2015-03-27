@@ -19,7 +19,7 @@
 *
 *  @package ec_ecopresto
 *  @author    Adonie SAS - Ecopresto
-*  @version    2.2.0
+*  @version    2.20.0
 *  @copyright Copyright (c) Adonie SAS - Ecopresto
 *  @license    Commercial license
 */
@@ -48,7 +48,7 @@ class ecopresto extends Module{
 	{
 		$this->name = 'ecopresto';
 		$this->tab = 'shipping_logistics';
-		$this->version = '2.2.0';
+		$this->version = '2.20.0';
 		$this->need_instance = 0;
 		$this->author = 'Ecopresto';
 		$this->displayName = $this->l('Ecopresto - Dropshipping');

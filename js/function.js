@@ -18,7 +18,7 @@
 *
 *  @package ec_ecopresto
 *  @author    Adonie SAS - Ecopresto
-*  @version    2.2.0
+*  @version    2.20.0
 *  @copyright Copyright (c) Adonie SAS - Ecopresto
 *  @license    Commercial license
 */
