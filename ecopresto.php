@@ -416,6 +416,7 @@ class ecopresto extends Module{
 				';
 		}
 		
+		$parametrescatalogue = '';
 		if ($onglet == "catalogue")
 			$parametrescatalogue = "selected";
 		$html .= '<div id="tabList">';
@@ -663,6 +664,8 @@ class ecopresto extends Module{
 
 
 		//Onglet affiché si on revient vers les paramètres
+
+		$parametres = '';
 		if ($onglet == "parametres")
 			$parametres = "selected";
 		$html .= '<div id="menuTab6Sheet" class="tabItem '.$parametres.'">';
@@ -923,6 +926,7 @@ class ecopresto extends Module{
 		$html .= '</div>';
 		
 		//Affiché par défaut
+		$aide = '';
 		if ($onglet == "aide")
 			$aide = "selected";
 		$html .= '<div id="menuTab20Sheet" class="tabItem '.$aide.'">';
