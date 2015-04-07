@@ -290,7 +290,7 @@ class ecopresto extends Module{
 					$output .= $this->displayConfirmation($traitement.$this->l('% du fichier catalogue a été traité. Renouvelez cette étape.'));
 			}
 			//Affichage des erreurs SQL, le cas échéant:
-			if (count($tabErreur) > 0) {
+			if (count($tabErreur) > 0 && _PS_MODE_DEV_) {
 				$liste_erreur;
 				foreach ($tabErreur as $erreur)
 					$liste_erreur .='<li>'.$erreur.'</li>';
