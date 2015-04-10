@@ -423,7 +423,7 @@ class ecopresto extends Module{
 		$html .= '<div id="menuTab2Sheet" class="tabItem '.$parametrescatalogue.'">';
 		
 		$html .= '<h3>'.$this->l('Catalogue Ecopresto').'</h3>';
-		
+		$all_catalog = '';
 		if ($catalog->getInfoEco('isConfig')) {
 			
 			if (!$catalog->getInfoEco('isTableCatalogueBrut')){
@@ -801,6 +801,7 @@ class ecopresto extends Module{
 		$html .= '</div>';
 		
 		//Affiché par défaut
+		$info = '';
 		if ($onglet == "info")
 			$info = "selected";
 		$html .= '<div id="menuTab12Sheet" class="tabItem '.$info.'">';
