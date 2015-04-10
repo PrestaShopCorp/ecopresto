@@ -79,37 +79,40 @@ if ($download->load($stockD) == true)
 		while (($data = fgetcsv($handle, 10000, ';')) !== false)
 		{
 			$iteration ++;
-			$ref = $data[0];
-			$qty = $data[1];
-			$pri = $data[2];
-			$tva = $data[3];
-			$reference = new importerReference($ref);
-
-			if (isset($reference->id_product) && $reference->id_product > 0)
-				if (version_compare(_PS_VERSION_, '1.5', '>='))
-				{
-					if ($reference->id_product_attribute)
+			if (verifierPresenceReference($data[0]))
+			{
+				$ref = $data[0];
+				$qty = $data[1];
+				$pri = $data[2];
+				$tva = $data[3];
+				$reference = new importerReference($ref);
+	
+				if (isset($reference->id_product) && $reference->id_product > 0)
+					if (version_compare(_PS_VERSION_, '1.5', '>='))
 					{
-						$allAT = importerReference::getAllProductIdByReference($ref);
-						if (count($allAT) < 1)
-							$allAT[] = 0;
-						foreach ($allAT as $att)
+						if ($reference->id_product_attribute)
 						{
-							StockAvailable::setQuantity((int)$reference->id_product, (int)$att, (int)$qty, (int)getShopForRef($att, 1));
-							updatePrice((int)$reference->id_product, (int)$att, (float)$pri, (float)$tva, (int)getShopForRef($att, 1), $tabTax);
+							$allAT = importerReference::getAllProductIdByReference($ref);
+							if (count($allAT) < 1)
+								$allAT[] = 0;
+							foreach ($allAT as $att)
+							{
+								StockAvailable::setQuantity((int)$reference->id_product, (int)$att, (int)$qty, (int)getShopForRef($att, 1));
+								updatePrice((int)$reference->id_product, (int)$att, (float)$pri, (float)$tva, (int)getShopForRef($att, 1), $tabTax);
+							}
+						}
+						else
+						{
+							StockAvailable::setQuantity((int)$reference->id_product, 0, (int)$qty, (int)getShopForRef($ref, 2));
+							updatePrice((int)$reference->id_product, 0, (float)$pri, (float)$tva, (int)getShopForRef($reference->id_product, 0), $tabTax);
 						}
 					}
 					else
 					{
-						StockAvailable::setQuantity((int)$reference->id_product, 0, (int)$qty, (int)getShopForRef($ref, 2));
-						updatePrice((int)$reference->id_product, 0, (float)$pri, (float)$tva, (int)getShopForRef($reference->id_product, 0), $tabTax);
+						updateProductQuantity($reference->id_product, $reference->id_product_attribute, $qty);
+						updatePrice((int)$reference->id_product, $reference->id_product_attribute, (float)$pri, (float)$tva, 1, $tabTax);
 					}
-				}
-				else
-				{
-					updateProductQuantity($reference->id_product, $reference->id_product_attribute, $qty);
-					updatePrice((int)$reference->id_product, $reference->id_product_attribute, (float)$pri, (float)$tva, 1, $tabTax);
-				}
+			}
 		}
 		$htmldebug .= '<li>Traitement stock, OK. Itérations: '.$iteration.'</li>';
 		$catalog->updateMAJStock($etat);
@@ -133,6 +136,23 @@ function updatePrice($idP, $att = 0, $pri, $tva, $idS, $tabTax)
 		if (version_compare(_PS_VERSION_, '1.5', '>='))
             Db::getInstance()->execute('UPDATE `'._DB_PREFIX_.'product_shop` SET wholesale_price = '.(float)$wholesale_price.' WHERE `id_product` = '.(int)$idP);
 	}
+}
+
+ /**
+  * Cette fonction vérifie la présence de la référence dans le référentiel produit. Renvoi vrai si trouvé, faux sinon. 
+  *
+  *
+  * @param reference
+  * @return boolean
+  */
+function verifierPresenceReference ($reference)
+{
+	$reference = strstr($reference, '-', true);
+	$nbref = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('SELECT COUNT( * ) FROM `'._DB_PREFIX_.'product` WHERE `supplier_reference` = "'.pSQL($reference).'"');
+	if ($nbref > 0)
+		return true;
+	else 
+		return false;
 }
 
 function getShopForRef($id, $typ)
