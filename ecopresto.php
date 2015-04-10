@@ -937,7 +937,6 @@ class ecopresto extends Module{
 		$html .= '<li>'.$this->l('Version Prestashop').' : '._PS_VERSION_.'</li>';
 		$html .= '<li>'.$this->l('Prestashop - cache activé ?').' : '._PS_CACHE_ENABLED_.'</li>';
 		$html .= '<li>'.$this->l('Prestashop - SQL slave ?').' : '._PS_USE_SQL_SLAVE_.'</li>';
-		$html .= '<li>'.$this->l('Prestashop - mode dev ?').' : '._PS_MODE_DEV_.'</li>';
 		$html .= '<li>'.$this->l('Prestashop - mode demo ?').' : '._PS_MODE_DEMO_.'</li>';
 		if (version_compare(_PS_VERSION_, '1.5', '>='))
 		{
