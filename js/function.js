@@ -1,23 +1,26 @@
-/* NOTICE OF LICENSE
+/**
+* NOTICE OF LICENSE
 *
-* This source file is subject to a commercial license from SARL Ether Création
+* This source file is subject to a commercial license from Adonie SAS - Ecopresto
 * Use, copy, modification or distribution of this source file without written
-* license agreement from the SARL Ether Création is strictly forbidden.
-* In order to obtain a license, please contact us: contact@ethercreation.com
+* license agreement from Adonie SAS - Ecopresto is strictly forbidden.
+* In order to obtain a license, please contact us: info@ecopresto.com
 * ...........................................................................
 * INFORMATION SUR LA LICENCE D'UTILISATION
 *
 * L'utilisation de ce fichier source est soumise a une licence commerciale
-* concedee par la societe Ether Création
+* concedee par la societe Adonie SAS - Ecopresto
 * Toute utilisation, reproduction, modification ou distribution du present
-* fichier source sans contrat de licence ecrit de la part de la SARL Ether Création est
+* fichier source sans contrat de licence ecrit de la part de la SAS Adonie - Ecopresto est
 * expressement interdite.
-* Pour obtenir une licence, veuillez contacter la SARL Ether Création a l'adresse: contact@ethercreation.com
+* Pour obtenir une licence, veuillez contacter Adonie SAS a l'adresse: info@ecopresto.com
 * ...........................................................................
-* @package ec_ecopresto
-* @copyright Copyright (c) 2010-2014 S.A.R.L Ether Création (http://www.ethercreation.com)
-* @author Arthur Revenaz
-* @license Commercial license
+*
+*  @package ec_ecopresto
+*  @author    Adonie SAS - Ecopresto
+*  @version    2.20.0
+*  @copyright Copyright (c) Adonie SAS - Ecopresto
+*  @license    Commercial license
 */
 
 function MAJDereferencement()
@@ -512,7 +515,7 @@ $(document).ready(function()
             rows_counter: false,  
             enable_default_theme: false,    
             loader: true,  
-            loader_html: '<h4 style="color:red;">Loading, please wait...</h4>',
+            loader_html: '<h4 style="color:green;">Chargement en cours, merci de patienter...</h4><em>Please wait while loading data...</em>',
     extensions: {     
                     name:['ColsVisibility'],   
                     src:['../modules/ecopresto/js/TFExt_ColsVisibility/TFExt_ColsVisibility.js'],   

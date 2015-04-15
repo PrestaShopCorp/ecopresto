@@ -2,26 +2,28 @@
 /**
 * NOTICE OF LICENSE
 *
-* This source file is subject to a commercial license from SARL Ether Création
+* This source file is subject to a commercial license from Adonie SAS - Ecopresto
 * Use, copy, modification or distribution of this source file without written
-* license agreement from the SARL Ether Création is strictly forbidden.
-* In order to obtain a license, please contact us: contact@ethercreation.com
+* license agreement from Adonie SAS - Ecopresto is strictly forbidden.
+* In order to obtain a license, please contact us: info@ecopresto.com
 * ...........................................................................
 * INFORMATION SUR LA LICENCE D'UTILISATION
 *
 * L'utilisation de ce fichier source est soumise a une licence commerciale
-* concedee par la societe Ether Création
+* concedee par la societe Adonie SAS - Ecopresto
 * Toute utilisation, reproduction, modification ou distribution du present
-* fichier source sans contrat de licence ecrit de la part de la SARL Ether Création est
+* fichier source sans contrat de licence ecrit de la part de la SAS Adonie - Ecopresto est
 * expressement interdite.
-* Pour obtenir une licence, veuillez contacter la SARL Ether Création a l'adresse: contact@ethercreation.com
+* Pour obtenir une licence, veuillez contacter Adonie SAS a l'adresse: info@ecopresto.com
 * ...........................................................................
 *
 *  @package ec_ecopresto
-*  @author Arthur Revenaz
-*  @copyright Copyright (c) 2010-2014 S.A.R.L Ether Création (http://www.ethercreation.com)
-*  @license Commercial license
+*  @author    Adonie SAS - Ecopresto
+*  @version    2.20.0
+*  @copyright Copyright (c) Adonie SAS - Ecopresto
+*  @license    Commercial license
 */
+
 if (!defined('_PS_VERSION_'))
 	exit;
 
@@ -69,6 +71,7 @@ class Catalog
 			'DATE_IMPORT_PS'=>'-',
 			'DATE_IMPORT_ECO'=>'-',
 			'IMPORT_AUTO'=>0,
+			'NB_LIGNE_IMPORT'=> 0,
 		);
 
 		$this->tabInsert = array(
@@ -147,6 +150,33 @@ class Catalog
 	{
 		return Db::getInstance()->execute('UPDATE `'._DB_PREFIX_.'ec_ecopresto_info` SET `value` = "'.pSQL($value).'" WHERE `name`="'.pSQL($name).'"');
 	}
+	/**
+	 * mettreajourInfoEco Met à jour une info dans la table info, si cette info n'existe pas (name) elle la créé
+	 *
+	 * @param string $name nom de la valeur
+	 * @param string $value valeur
+	 * @return boolean
+	 */
+	public function mettreajourInfoEco($name, $value)
+	{
+		if (Db::getInstance()->getValue('SELECT * FROM `'._DB_PREFIX_.'ec_ecopresto_info` WHERE name="'.pSQL($name).'"'))
+			return Db::getInstance()->execute('UPDATE `'._DB_PREFIX_.'ec_ecopresto_info` SET `value` = "'.pSQL($value).'" WHERE `name`="'.pSQL($name).'"');
+		else
+			return Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_.'ec_ecopresto_info` (`name`, `value`) VALUES ("'.pSQL($name).'", "'.pSQL($value).'")');
+	}
+	/**
+	 * mettreajouronfigEco Met à jour une info dans la table config pour le shop séelctionné
+	 *
+	 * @param string $name nom de la valeur
+	 * @param string $value valeur
+	 * @param string $shop shop en cours
+	 * @return boolean
+	 */
+	public function mettreajourConfEco($name, $value, $shop)
+	{
+		
+		return Db::getInstance()->execute('UPDATE `'._DB_PREFIX_.'ec_ecopresto_configuration` SET `value` = "'.pSQL($value).'" WHERE `name`="'.pSQL($name).'" AND `id_shop`="'.pSQL($shop).'"');
+	}
 
 	public function synchroManuelOrder($idorder, $typ)
 	{
@@ -154,6 +184,7 @@ class Catalog
 			Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_.'ec_ecopresto_export_com` (`id_order`) VALUES ('.(int)$idorder.')');
 		else
 		{
+			//Variable $idcS utilisée dans le fichier gen_com.php
 			$idcS = $idorder;
 			include 'gen_com.php';
 		}
@@ -266,7 +297,7 @@ class Catalog
 		{
 			$istring = $i;
 			$partstring = 'category_1;category_2;category_3;category_4;category_5;ss_category_1;ss_category_2;ss_category_3;ss_category_4;ss_category_5;reference;reference_attribute;manufacturer;attribute_1;attribute_2;attribute_3;attribute_4;attribute_5;name_1;name_2;name_3;name_4;name_5;description_short_1;description_short_2;description_short_3;description_short_4;description_short_5;description_1;description_2;description_3;description_4;description_5;price;image_1;image_2;image_3;image_4;image_5;image_6;rate;ean13;weight;pmvc';
-			$retempol = Tools::strlen($istring);
+			//$retempol = Tools::strlen($istring);
 			while (Tools::strlen($istring) < 3)
 				$istring = '0'.$istring;
 
@@ -397,7 +428,7 @@ class Catalog
 		foreach ($all_tax as $tax)
 		{
 			$tax_eco = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('SELECT id_tax_rules_group FROM `'._DB_PREFIX_.'ec_ecopresto_tax_shop` WHERE `id_tax_eco`='.(int)$tax['id_tax_eco'].' AND `id_shop`='.(int)self::getInfoEco('ID_SHOP'));
-			$response .= '<p>Tax EcoPresto :'.$tax['rate'].' =>';
+			$response .= '<p>Taxe EcoPresto : '.$tax['rate'].' =>';
 			$response .= ' <select name="tax_ps[]">
 							<option value="'.$tax['id_tax_eco'].'_0"> 0 </option>';
 			foreach ($tax_PS as $taxPS)
@@ -416,7 +447,7 @@ class Catalog
 		foreach ($all_Attribut as $attribut)
 		{
 			$attribut_eco = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('SELECT id_attribute FROM `'._DB_PREFIX_.'ec_ecopresto_attribute_shop` WHERE `id_attribute_eco`='.(int)$attribut['id_attribute_eco'].' AND `id_shop`='.(int)self::getInfoEco('ID_SHOP'));
-			$response .= '<p>Attribut EcoPresto :'.$attribut['value'].' =>';
+			$response .= '<p>Attribut EcoPresto : '.$attribut['value'].' =>';
 			$response .= ' <select name="attribut_ps[]">
 							<option value="'.$attribut['id_attribute_eco'].'_0"> Créer automatiquement </option>';
 			foreach ($Attribut_PS as $attributPS)
@@ -436,7 +467,7 @@ class Catalog
 		foreach ($all_lang as $lang)
 		{
 			$lang_eco = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('SELECT id_lang_eco FROM `'._DB_PREFIX_.'ec_ecopresto_lang_shop` WHERE `id_lang`='.(int)$lang['id_lang'].' AND `id_shop`='.(int)self::getInfoEco('ID_SHOP'));
-			$response .= '<p>Langue Prestashop :'.$lang['name'].' =>';
+			$response .= '<p>Langue Prestashop : '.$lang['name'].' =>';
 			$response .= ' <select name="langECO[]">';
 			foreach ($lang_ECOPRESTO as $language)
 				$response .= '<option value="'.$lang['id_lang'].'_'.$language['id_lang_eco'].'" '.($lang_eco == $language['id_lang_eco']?'selected="selected"':'').'>'.$language['lang'].'</option>';
@@ -449,7 +480,7 @@ class Catalog
 	{
 		if (Tools::getValue('tax_ps') != '')
 		{
-			foreach (Tools::getValue('tax_ps') as $key => $val)
+			foreach (Tools::getValue('tax_ps') as $val)
 			{
 				$value = explode('_', $val);
 				$id_tax = Db::getInstance()->getValue('SELECT count(`id_tax_rules_group`) FROM `'._DB_PREFIX_.'ec_ecopresto_tax_shop` WHERE `id_shop`='.(int)self::getInfoEco('ID_SHOP').' AND `id_tax_eco`='.(int)$value[0]);
@@ -470,7 +501,7 @@ class Catalog
 	{
 		if (Tools::getValue('attribut_ps') != '')
 		{
-			foreach (Tools::getValue('attribut_ps') as $key => $val)
+			foreach (Tools::getValue('attribut_ps') as $val)
 			{
 				$value = explode('_', $val);
 
@@ -490,7 +521,7 @@ class Catalog
 
 	public function updateLang()
 	{
-		foreach (Tools::getValue('langECO') as $key => $val)
+		foreach (Tools::getValue('langECO') as $val)
 		{
 			$value = explode('_', $val);
 			$id_lang = Db::getInstance()->getValue('SELECT `id_lang` FROM `'._DB_PREFIX_.'ec_ecopresto_lang_shop` WHERE `id_shop`='.(int)self::getInfoEco('ID_SHOP').' AND `id_lang`='.(int)$value[0]);
@@ -575,14 +606,51 @@ class Catalog
 		Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'ec_ecopresto_catalog`');
 		Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'ec_ecopresto_catalog_attribute`');
 	}
-
-	public function SetSupplier()
+	/**
+	 * Supprime les données des tables produit avant de recharger l'ensemble de la base produit
+	 *
+	 *
+	 * @param aucun
+	 * @return boolean false si erreur
+	 */
+	public function deleteDataBrut()
 	{
-		Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_.'supplier` (`name`,`date_add`,`date_upd`,`active`) VALUES ("'.pSQL($this->supplier).'","'.pSQL(date('Y-m-d H:i:s')).'","'.pSQL(date('Y-m-d H:i:s')).'",1)');
+		Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'ec_ecopresto_catalog`');
+		Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'ec_ecopresto_catalog_attribute`');
+		Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'ec_ecopresto_attribute_shop`');
+		Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'ec_ecopresto_attribute`');
+	}
 
-		$idSupplier = Db::getInstance()->Insert_ID();
+	/**
+	 * Avant l'installation du module, on cherche s'il n'existe pas d'ancien "supplier" Ecopresto
+	 * Le cas échéant, on renvoi son id
+	 *
+	 * @param aucun
+	 * @return id du supplier, 0 si aucun trouvé
+	 */
+	public function verifierSupplier()
+	{
+		return Db::getInstance()->getValue('SELECT `id_supplier` FROM `'._DB_PREFIX_.'supplier` WHERE `name` = "ECOPRESTO"');
+	}
+	
+	/**
+	 * Enregistre l'ID du supplier et le créé si besoin
+	 * Le cas échéant, on renvoi son id
+	 *
+	 * @param aucun
+	 * @return id du supplier, 0 si aucun trouvé
+	 */
+	public function SetSupplier($idSupplier)
+	{
+		$estNouvelleInstallation = false;
+		if (!$idSupplier)
+		{
+			Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_.'supplier` (`name`,`date_add`,`date_upd`,`active`) VALUES ("'.pSQL($this->supplier).'","'.pSQL(date('Y-m-d H:i:s')).'","'.pSQL(date('Y-m-d H:i:s')).'",1)');
+			$idSupplier = Db::getInstance()->Insert_ID();
+			$estNouvelleInstallation = true;
+		}
 
-		if (($idSupplier) && ($idSupplier != 0))
+		if ($estNouvelleInstallation)
 		{
 			$all_lang = Language::getLanguages(true);
 
@@ -601,8 +669,16 @@ class Catalog
 			else
 				Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_.'ec_ecopresto_configuration` (`value`,`name`,`id_shop`) VALUES ('.(int)$idSupplier.',"PARAM_SUPPLIER",1)');
 		}
-		else
-			return false;
+		else {
+			if (version_compare(_PS_VERSION_, '1.5', '>='))
+			{
+				$all_shop = Shop::getShops(false);
+				foreach ($all_shop as $shop)
+					Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_.'ec_ecopresto_configuration` (`value`,`name`,`id_shop`) VALUES ('.(int)$idSupplier.',"PARAM_SUPPLIER",'.(int)$shop['id_shop'].')');
+			}
+			else
+				Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_.'ec_ecopresto_configuration` (`value`,`name`,`id_shop`) VALUES ('.(int)$idSupplier.',"PARAM_SUPPLIER",1)');
+		}
 		return true;
 	}
 
@@ -811,6 +887,7 @@ class Catalog
 	public function GetFilecsv()
 	{
 		$domain = Configuration::get('PS_SHOP_DOMAIN');
+		
 		$cle = $this->tabConfig['ID_ECOPRESTO'];
 
 		$filename = $this->fichierDistant;
@@ -836,7 +913,354 @@ class Catalog
 			$response = '0,<p>Aucune mise à jour catalogue Ecopresto disponible.</p>';
 		return $response;
 	}
+	/**
+	 * Enregistre le catalogue CSV en provennance d'Ecopresto
+	 *
+	 *
+	 * @param aucun
+	 * @return false si erreur, nb ligne du fichier sinon
+	 */
+	public function GetCatalogCSV()
+	{
+		$filename = $this->fichierDistant;
+		include_once _PS_ROOT_DIR_.'/modules/ecopresto/class/download.class.php';
+		$download = new DownloadBinaryFile();
+		$response = '';
+		
+		
+		if ($download->load($filename) == true)
+		{
+			$download->saveTo(_PS_ROOT_DIR_.'/modules/ecopresto/files/'.$this->fichierImport);
+			//Lire le nombre de ligne
+			$linecount = 0;
+			$handle = fopen(_PS_ROOT_DIR_.'/modules/ecopresto/files/'.$this->fichierImport, "r");
+			while(!feof($handle)){
+			  $line = fgets($handle, 4096);
+			  $linecount = $linecount + substr_count($line, PHP_EOL);
+			}
+			fclose($handle);
+			$nbproduit = $linecount -1;
+			if ($linecount == 0)
+				$response = false;
+			else 
+				$response = $nbproduit;
+		}
+		else
+			$response = false;
+			
+		return $response;
+	}
+	
+	/**
+	 * Enregistre le fichier CSV dans une table temporaire
+	 *
+	 *
+	 * @param aucun
+	 * @return boolean false si erreur
+	 */
+	public function setCatalogCSVMySQL()
+	{
+		$sql = "LOAD DATA LOCAL INFILE '"._PS_ROOT_DIR_."/modules/ecopresto/files/".$this->fichierImport."' 
+				INTO TABLE "._DB_PREFIX_."ec_ecopresto_cataloguebrut 
+				CHARACTER SET utf8
+				FIELDS TERMINATED BY ';' 
+				ENCLOSED BY '\"' 
+				LINES TERMINATED BY '\n'
+				IGNORE 1 LINES;";
+		if (!Db::getInstance()->execute($sql))
+			return false;
+		else 
+			return true;
+	}
+	/**
+	 * Enregistre le fichier CSV dans les tables catalogue et attributs, via un parse PHP
+	 *
+	 *
+	 * @param aucun
+	 * @return boolean false si erreur
+	 */
+	public function setCatalogCSVtoEcopresto_parsephp(&$tabErreur)
+	{
+		//Lire la dernière position du pointeur, ou prendre au début si aucune ligne traitée		
+		$pointeur = $this->getInfoEco('pointeurcsv');
+		//Si premier passage, supprimer les données présentes dans le catalogue actuel
+		//Operation déjà faite à la fin de l'étape 1 
+		if ($pointeur == 0) {
+			$this->deleteData();
+			//Supprimer les tables et les attributs ?
+			$this->deleteDataBrut();
+		}
+		
+		$tab_Attributes = array();
+		//$pointeur = 0;
+		$iteration_max = $this->getInfoEco('nbligneatraitercsv');
+		if ($iteration_max < 100 || $iteration_max > 100000)
+			$iteration_max = 5000;
+		
+		
+		$handle = fopen(_PS_ROOT_DIR_."/modules/ecopresto/files/".$this->fichierImport, 'r');
+		fseek($handle, $pointeur);
+		$i = 0;
+		while ((($data = fgetcsv($handle, 10000, ';')) !== false) && ($i < $iteration_max))
+		{
+			
+			$i++;
+			if ($i > 1) {
+				//Requête pour insertion dans la table produit :
+				$sql_catalog = "INSERT INTO  "._DB_PREFIX_."ec_ecopresto_catalog (`category_1` ,`category_2` ,`category_3` ,`category_4` ,`category_5` ,`ss_category_1` ,`ss_category_2` ,`ss_category_3` ,`ss_category_4` ,`ss_category_5` ,`name_1` ,`name_2` ,`name_3` ,`name_4` ,`name_5` ,`reference` ,`manufacturer` ,`description_short_1` ,`description_short_2` ,`description_short_3` ,`description_short_4` ,`description_short_5` ,`description_1` ,`description_2` ,`description_3` ,`description_4` ,`description_5` ,`image_1` ,`image_2` ,`image_3` ,`image_4` ,`image_5` ,`image_6` ,`rate` ,`price` ,`ean13` ,`weight` ,`pmvc`) VALUES (
+				'".pSQL($data[0])."' ,
+				'".pSQL($data[1])."' ,
+				'".pSQL($data[2])."' ,
+				'".pSQL($data[3])."' ,
+				'".pSQL($data[4])."' ,
+				'".pSQL($data[5])."' ,
+				'".pSQL($data[6])."' ,
+				'".pSQL($data[7])."' ,
+				'".pSQL($data[8])."' ,
+				'".pSQL($data[9])."' ,
+				'".pSQL($data[18])."' ,
+				'".pSQL($data[19])."' ,
+				'".pSQL($data[20])."' ,
+				'".pSQL($data[21])."' ,
+				'".pSQL($data[22])."' ,
+				'".pSQL($data[10])."' ,
+				'".pSQL($data[12])."' ,
+				'".pSQL($data[23])."' ,
+				'".pSQL($data[24])."' ,
+				'".pSQL($data[25])."' ,
+				'".pSQL($data[26])."' ,
+				'".pSQL($data[27])."' ,
+				'".pSQL($data[28])."' ,
+				'".pSQL($data[29])."' ,
+				'".pSQL($data[30])."' ,
+				'".pSQL($data[31])."' ,
+				'".pSQL($data[32])."' ,
+				'".pSQL($data[34])."' ,
+				'".pSQL($data[35])."' ,
+				'".pSQL($data[36])."' ,
+				'".pSQL($data[37])."' ,
+				'".pSQL($data[38])."' ,
+				'".pSQL($data[39])."' ,
+				'".pSQL($data[40])."' ,
+				'".pSQL($data[33])."' ,
+				'".pSQL($data[41])."' ,
+				'".pSQL($data[42])."' ,
+				'".pSQL($data[43])."');";
+				if (!Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql_catalog))
+					$tabErreur[] = 'Erreur SQL Catalog: '.$sql_catalog.'<br/>Itération CSV: '.$i;
+				
+				if ($data[11] != '' && $data[10] != $data[11]) {
+					//Requête pour insertion dans la table attributs :
+					$sql_attribute = "INSERT INTO  "._DB_PREFIX_."ec_ecopresto_catalog_attribute (`reference_attribute` ,`reference` ,`price` ,`pmvc` ,`ean13` ,`weight` ,`attribute_1` ,`attribute_2` ,`attribute_3` ,`attribute_4` ,`attribute_5`) VALUES (
+					'".pSQL($data[11])."',  
+					'".pSQL($data[10])."',  
+					'".pSQL($data[33])."',  
+					'".pSQL($data[43])."',  
+					'".pSQL($data[41])."',  
+					'".pSQL($data[42])."',  
+					'".pSQL($data[13])."',  
+					'".pSQL($data[14])."',  
+					'".pSQL($data[15])."',  
+					'".pSQL($data[16])."',  
+					'".pSQL($data[17])."');";
+					if (!Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql_attribute))
+						$tabErreur[] = 'Erreur SQL Attribute: '.$sql_attribute.'<br/>Itération CSV: '.$i;
+				}
+				
+				//Construire la liste des attributs : 
+				if ($data[13] != '')
+				{
+					$att = $data[13];
+					$explode_Att = explode('|', $att);
+					foreach ($explode_Att as $lst_Att)
+					{
+						list($name_, $val_) = explode(':', $lst_Att);
+						$name = ltrim(trim($name_));
+						//On inscrit dans le tableau l'attribut sous sa propre clef, on évite les doublons ainsi
+						$tab_Attributes[$name] = $name;
+					}
+				}
+				if ($data[40] != '')
+					array_push($this->tabTVA, $data[40]);
+				//Mettre à jour le pointeur
+				$this->mettreajourInfoEco('pointeurcsv', ftell($handle));
+			}
+			//insérer la liste des attributs
+			$this->tabAttributes = $tab_Attributes;
+			$this->insertAttributes();
+			$this->matchAttributes();
+			//insérer la liste des taux de TVA
+			$tabtva = $this->tabTVA;
+			$this->tabTVA = array_unique($tabtva);
+			$this->matchTax();
+		}
+		return ftell($handle);
+	}
+	/*
+	 * setCatalogBrutToEcopresto enregistre les données de la table cataloguebrut vers les tables permettant
+	 * de sélectionner les produits Ecopresto. Le 
+	 * @param aucun
+	 * @return selon résultat, erreur ou nombre de ligne restant à traiter
+	 */
+	public function setCatalogBrutToEcopresto() 
+	{
+		//Récupérer le nombre de ligne à traiter, remplacer par une valeur par défaut si trop grand ou texte
+		$nbligne = $this->tabConfig['NB_LIGNE_IMPORT'];
+		if ((int)$nbligne > 100000 || (int)$nbligne == 0)
+			$nbligne = 2000;
+		//chercher le nombre de ligne restant à traiter
+		$tabEtat = $this->etatCatalogBrutToEcopresto();
+		
+		//Si premier passage, supprimer les données présentes dans le catalogue actuel
+		if ($tabEtat[0] == $tabEtat[2]) {
+			$this->deleteData();
+			//Supprimer les tables et les attributs ?
+			$this->deleteDataBrut();
+		}
 
+		$tab_Attributes = array();
+		//Requête sur la table temporaire
+		$produit_data = Db::getInstance(_PS_USE_SQL_SLAVE_)->ExecuteS('SELECT * FROM  `'._DB_PREFIX_.'ec_ecopresto_cataloguebrut` WHERE `importbrut` = 0 LIMIT '.pSQL($nbligne).'', true, 0);
+		foreach ($produit_data as $data)
+		{
+			//Requête pour insertion dans la table produit :
+			$sql_catalog = 
+			"INSERT INTO  "._DB_PREFIX_."ec_ecopresto_catalog (`category_1` ,`category_2` ,`category_3` ,`category_4` ,`category_5` ,`ss_category_1` ,`ss_category_2` ,`ss_category_3` ,`ss_category_4` ,`ss_category_5` ,`name_1` ,`name_2` ,`name_3` ,`name_4` ,`name_5` ,`reference` ,`manufacturer` ,`description_short_1` ,`description_short_2` ,`description_short_3` ,`description_short_4` ,`description_short_5` ,`description_1` ,`description_2` ,`description_3` ,`description_4` ,`description_5` ,`image_1` ,`image_2` ,`image_3` ,`image_4` ,`image_5` ,`image_6` ,`rate` ,`price` ,`ean13` ,`weight` ,`pmvc`) VALUES (
+			'".pSQL($data['category_1'])."' ,
+			'".pSQL($data['category_2'])."' ,
+			'".pSQL($data['category_3'])."' ,
+			'".pSQL($data['category_4'])."' ,
+			'".pSQL($data['category_5'])."' ,
+			'".pSQL($data['ss_category_1'])."' ,
+			'".pSQL($data['ss_category_2'])."' ,
+			'".pSQL($data['ss_category_3'])."' ,
+			'".pSQL($data['ss_category_4'])."' ,
+			'".pSQL($data['ss_category_5'])."' ,
+			'".pSQL($data['name_1'])."' ,
+			'".pSQL($data['name_2'])."' ,
+			'".pSQL($data['name_3'])."' ,
+			'".pSQL($data['name_4'])."' ,
+			'".pSQL($data['name_5'])."' ,
+			'".pSQL($data['reference'])."' ,
+			'".pSQL($data['manufacturer'])."' ,
+			'".pSQL($data['description_short_1'])."' ,
+			'".pSQL($data['description_short_2'])."' ,
+			'".pSQL($data['description_short_3'])."' ,
+			'".pSQL($data['description_short_4'])."' ,
+			'".pSQL($data['description_short_5'])."' ,
+			'".pSQL($data['description_1'])."' ,
+			'".pSQL($data['description_2'])."' ,
+			'".pSQL($data['description_3'])."' ,
+			'".pSQL($data['description_4'])."' ,
+			'".pSQL($data['description_5'])."' ,
+			'".pSQL($data['image_1'])."' ,
+			'".pSQL($data['image_2'])."' ,
+			'".pSQL($data['image_3'])."' ,
+			'".pSQL($data['image_4'])."' ,
+			'".pSQL($data['image_5'])."' ,
+			'".pSQL($data['image_6'])."' ,
+			'".pSQL($data['rate'])."' ,
+			'".pSQL($data['price'])."' ,
+			'".pSQL($data['ean13'])."' ,
+			'".pSQL($data['weight'])."' ,
+			'".pSQL($data['pmvc'])."');";
+			if (!Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql_catalog))
+				return false;
+				
+			if ($data['reference_attribute'] != '' && $data['reference'] != $data['reference_attribute']) {
+				//Requête pour insertion dans la table attributs :
+				$sql_attribute = "INSERT INTO  "._DB_PREFIX_."ec_ecopresto_catalog_attribute (`reference_attribute` ,`reference` ,`price` ,`pmvc` ,`ean13` ,`weight` ,`attribute_1` ,`attribute_2` ,`attribute_3` ,`attribute_4` ,`attribute_5`) VALUES (
+				'".pSQL($data['reference_attribute'])."',  
+				'".pSQL($data['reference'])."',  
+				'".pSQL($data['price'])."',  
+				'".pSQL($data['pmvc'])."',  
+				'".pSQL($data['ean13'])."',  
+				'".pSQL($data['weight'])."',  
+				'".pSQL($data['attribute_1'])."',  
+				'".pSQL($data['attribute_2'])."',  
+				'".pSQL($data['attribute_3'])."',  
+				'".pSQL($data['attribute_4'])."',  
+				'".pSQL($data['attribute_5'])."');";
+				if (!Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql_attribute))
+					return false;
+			}
+			
+			$sql_updatecataloguebrut = 'UPDATE `'._DB_PREFIX_.'ec_ecopresto_cataloguebrut` SET importbrut=1 WHERE `reference_attribute`="'.pSQL($data['reference_attribute']).'"';
+			if (!Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql_updatecataloguebrut))
+					return false;
+			
+			//Construire la liste des attributs : 
+			if ($data['attribute_1'] != '')
+			{
+				$att = $data['attribute_1'];
+				$explode_Att = explode('|', $att);
+				foreach ($explode_Att as $lst_Att)
+				{
+					list($name_, $val_) = explode(':', $lst_Att);
+					$name = ltrim(trim($name_));
+					//On inscrit dans le tableau l'attribut sous sa propre clef, on évite les doublons ainsi
+					$tab_Attributes[$name] = $name;
+				}
+			}
+			if ($data['rate'] != '')
+				array_push($this->tabTVA, $data['rate']);				
+		//Fin du foreach $produit_data
+		}
+		//insérer la liste des attributs
+		$this->tabAttributes = $tab_Attributes;
+		$this->insertAttributes();
+		$this->matchAttributes();
+		//insérer la liste des taux de TVA
+		$tabtva = $this->tabTVA;
+		$this->tabTVA = array_unique($tabtva);
+		$this->matchTax();
+		
+		//chercher le nombre de ligne restant à traiter après ce traitement
+		$tabEtat = $this->etatCatalogBrutToEcopresto();
+		if ($tabEtat[0] == 0) {
+			if ($tabEtat[1] == $tabEtat[2]) {
+				//mettre à jour l'info sur la date de dernier import
+				$this->UpdateUpdateDate('DATE_IMPORT_ECO');
+				return "termine";
+			}
+			else
+				return "erreur";
+		}
+		else
+			return $tabEtat[0];
+	}
+	/*
+	 * etatCatalogBrutToEcopresto renvoi l'etat du traitement du catalogue brut : lignes totales, lignes traitées, lignes restantes, nombre d'étapes vu la configuration actuelle
+	 * @param aucun
+	 * @return array
+	 */
+	public function etatCatalogBrutToEcopresto() 
+	{
+		//Récupérer le nombre de ligne à traiter, remplacer par une valeur par défaut si trop grand ou texte
+		$nbligne = $this->tabConfig['NB_LIGNE_IMPORT'];
+		if ((int)$nbligne > 100000 || (int)$nbligne == 0)
+			$nbligne = 2000;
+		$tabEtat = array();
+		//Lignes restantes
+		$tabEtat[0] = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('SELECT COUNT(*) FROM  `'._DB_PREFIX_.'ec_ecopresto_cataloguebrut` WHERE `importbrut` = 0', true, 0);
+		//Lignes traitées
+		$tabEtat[1] = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('SELECT COUNT(*) FROM  `'._DB_PREFIX_.'ec_ecopresto_cataloguebrut` WHERE `importbrut` = 1', true, 0);
+		//Lignes totales
+		$tabEtat[2] = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('SELECT COUNT(*) FROM  `'._DB_PREFIX_.'ec_ecopresto_cataloguebrut`', true, 0);
+		//Calculer le nombre d'etape restante
+		$tabEtat[3] = (int)($tabEtat[0] / $nbligne + 1);
+		return $tabEtat;
+	}
+	/*
+	 * etatParseCatalogue renvoi le pourcentage de traitement du fichier catalogue.csv, en fonction de sa taille et de la dernière position du pointeur
+	 * @param aucun
+	 * @return int
+	 */
+	public function etatParseCatalogue()
+	{
+		return round($this->getInfoEco('pointeurcsv') * 100 / filesize(_PS_ROOT_DIR_.'/modules/ecopresto/files/catalogue.csv'));
+	}
+				
 	public function GetDereferencement()
 	{
 		$domain = Configuration::get('PS_SHOP_DOMAIN');

@@ -8,7 +8,7 @@
 #menuTab li.menuTabButton.selected span { background-position:100% 0; color:#000; }
 #tabList { clear:left; }
 .tabItem { display:none; }
-.tabItem.selected { display:block; background:#FFFFFF; border:1px solid #CCC; padding:15px 10px; }
+.tabItem.selected { display:block; background:#FFFFFF;  padding:15px 10px; }
 
 /***************************************************/
 /* Fenêtre modale                                  */
@@ -306,7 +306,7 @@ margin-top: -100px;
 #menuTab li.menuTabButton.selected span { background-position:100% 0; color:#000; }
 #tabList { clear:left; }
 .tabItem { display:none; }
-.tabItem.selected { display:block; background:#FFFFFF; border:1px solid #CCC; padding:15px 10px; }
+.tabItem.selected { display:block; background:#FFFFFF; padding:15px 10px; }
 
 /***************************************************/
 /* Fenêtre modale                                  */
@@ -649,3 +649,250 @@ vertical-align: middle
   color:gray;
   font-weight:normal;  
 } 
+
+
+/* Style V2.2 & sup */
+.nobootstrap {
+	min-width:600px!important;
+}
+.eco_menubar {
+    background-color: #F8F8F8;
+    border: 1px solid #CCCCCC;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    padding: 10px;
+    clear:both; 
+    max-width: 100%;
+}
+.eco_menubar ul {
+  margin:0;
+  padding: 0;
+}
+.eco_menubar ul li {
+   list-style: none;
+   list-style-type: none;
+   display:inline-block;
+   min-width:50px;
+   height:60px;
+   line-height: 120px;
+   margin: 5px 15px 5px;
+   cursor: pointer;
+   text-align: center;
+   font-weight: bold;
+}
+.eco_menubar ul li a{
+   display: block;
+   text-decoration: none;
+}
+li.icone-ecopresto {
+   background: url('../images/logo-ecopresto.png') center top no-repeat;
+   width:160px;
+   cursor: normal;
+}
+li.icone-accueil {
+   background: url('../images/icone-accueil.png') center top no-repeat;
+}
+li.icone-accueil:hover {
+   background: url('../images/icone-accueil-hover.png') center top no-repeat;
+}
+li.icone-aide {
+   background: url('../images/icone-aide.png') center top no-repeat;
+}
+li.icone-aide:hover {
+   background: url('../images/icone-aide-hover.png') center top no-repeat;
+}
+li.icone-deverouiller {
+   background: url('../images/icone-deverouiller.png') center top no-repeat;
+}
+li.icone-deverouiller:hover {
+   background: url('../images/icone-deverouiller-hover.png') center top no-repeat;
+}
+li.icone-documentation {
+   background: url('../images/icone-documentation.png') center top no-repeat;
+}
+li.icone-documentation:hover {
+   background: url('../images/icone-documentation-hover.png') center top no-repeat;
+}
+li.icone-catalogue {
+   background: url('../images/icone-catalogue.png') center top no-repeat;
+}
+li.icone-catalogue:hover {
+   background: url('../images/icone-catalogue-hover.png') center top no-repeat;
+}
+li.icone-commande {
+   background: url('../images/icone-commande.png') center top no-repeat;
+}
+li.icone-commande:hover {
+   background: url('../images/icone-commande-hover.png') center top no-repeat;
+}
+li.icone-suivi {
+   background: url('../images/icone-suivi.png') center top no-repeat;
+}
+li.icone-suivi:hover {
+   background: url('../images/icone-suivi-hover.png') center top no-repeat;
+}
+li.icone-suppression {
+   background: url('../images/icone-suppression.png') center top no-repeat;
+}
+li.icone-suppression:hover {
+   background: url('../images/icone-suppression-hover.png') center top no-repeat;
+}
+li.icone-parametres {
+   background: url('../images/icone-parametres.png') center top no-repeat;
+}
+li.icone-parametres:hover {
+   background: url('../images/icone-parametres-hover.png') center top no-repeat;
+}
+
+.aide_locale {
+	border: 1px solid #CCCCCC;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    padding: 10px;
+    min-height: 60px;
+    padding-right: 60px;
+    clear:both; 
+    max-width: 100%;
+    background: #e3e3e3 url('../images/icone-aide-fond-zone.png') right 10px no-repeat;
+}
+.longinput {
+	width:300px;
+}
+
+div.ec_inline {
+	float:left;
+	width:220px;
+	margin-right: 5px;
+	overflow: hidden;
+	padding-top: 50px;
+	min-height: 100px;
+}
+.ec_inline input[disabled] {
+	cursor: not-allowed;
+	color:grey;
+}
+
+.nobootstrap .ec_inline input.todo.button {
+	background: #b5e391;
+	background: -moz-linear-gradient(top, #b4e391 0%, #61c419 50%, #b4e391 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#b4e391), color-stop(50%,#61c419), color-stop(100%,#b4e391));
+	background: -webkit-linear-gradient(top, #b4e391 0%,#61c419 50%,#b4e391 100%);
+	background: -o-linear-gradient(top, #b4e391 0%,#61c419 50%,#b4e391 100%);
+	background: -ms-linear-gradient(top, #b4e391 0%,#61c419 50%,#b4e391 100%);
+	background: linear-gradient(to bottom, #b4e391 0%,#61c419 50%,#b4e391 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b4e391', endColorstr='#b4e391',GradientType=0 );
+}
+.nobootstrap .ec_inline input.retodo.button {
+	background: #feccb1;
+	background: -moz-linear-gradient(top, #feccb1 0%, #f17432 50%, #ea5507 51%, #fb955e 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#feccb1), color-stop(50%,#f17432), color-stop(51%,#ea5507), color-stop(100%,#fb955e));
+	background: -webkit-linear-gradient(top, #feccb1 0%,#f17432 50%,#ea5507 51%,#fb955e 100%);
+	background: -o-linear-gradient(top, #feccb1 0%,#f17432 50%,#ea5507 51%,#fb955e 100%);
+	background: -ms-linear-gradient(top, #feccb1 0%,#f17432 50%,#ea5507 51%,#fb955e 100%);
+	background: linear-gradient(to bottom, #feccb1 0%,#f17432 50%,#ea5507 51%,#fb955e 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#feccb1', endColorstr='#fb955e',GradientType=0 );
+}
+.ec_inline p {
+	font-size: 90%;
+	min-height: 50px;
+	margin: 0.5em 0 0;
+padding: 0 0 0.5em;
+}
+.ec_inline strong {
+	color: #a3bd3c;
+}
+.ec_inline.step1ko {
+   background: url('../images/step1-ko.png') right top no-repeat;
+}
+.ec_inline.step1ok {
+   background: url('../images/step1-ok.png') right top no-repeat;
+}
+.ec_inline.step2ko {
+   background: url('../images/step2-ko.png') right top no-repeat;
+}
+.ec_inline.step2ok {
+   background: url('../images/step2-ok.png') right top no-repeat;
+}
+.ec_inline.step2refresh {
+   background: url('../images/step2-refresh.png') right top no-repeat;
+}
+.ec_inline.step3ko {
+   background: url('../images/step3-ko.png') right top no-repeat;
+}
+.ec_inline.step3ok {
+   background: url('../images/step3-ok.png') right top no-repeat;
+}
+.ec_inline.step4ko {
+   background: url('../images/step4-ko.png') right top no-repeat;
+}
+.ec_inline.step4ok {
+   background: url('../images/step4-ok.png') right top no-repeat;
+}
+/* Bandeau accueil */
+#bienvenue {
+	border: 1px solid #CCCCCC;
+    border-radius: 3px;
+    clear:both; 
+    max-width: 100%;
+    background: #f6f7f9 ;
+}
+.fond {
+	margin:auto;
+	width:650px;
+	height:295px;
+	background: url('../images/bandeau-accueil.jpg') left top no-repeat;
+	width:650px;
+	height:295px;
+	position:relative;
+}
+#bienvenue .logo {
+	background: url('../images/logo-ecopresto.png') 15px 15px no-repeat;
+	padding-left: 200px;
+	width:650px;
+	margin: auto;
+	position:relative;
+}
+#bienvenue .logo form {
+	text-align: right;
+	margin-right:50px;
+}
+#lien_video {
+	display: block;
+	position: absolute;
+	height: 110px;
+	left: 230px;
+	top: 65px;
+	width: 170px;
+}
+#panneau_monsieur {
+	display: block;
+	position: absolute;
+	height: 100px;
+	width: 173px;
+	left: 27px;
+	top: 145px;
+}
+#panneau_madame {
+	display: block;
+	position: absolute;
+	height: 100px;
+	width: 173px;
+	left: 432px;
+	top: 150px;
+}
+#panneau_monsieur, #panneau_madame {
+	color: #0072a7;
+	font-weight: bold;
+	padding-top: 8px;
+	text-align: center;
+	font-size:14px;
+}
+#panneau_madame a, #panneau_monsieur a {
+	color: #0072a7;
+	font-weight: bold;
+	padding-top: 8px;
+	text-decoration: none;
+}
+#panneau_madame a:hover, #panneau_monsieur a:hover {
+	color: #a5c136;
+}
