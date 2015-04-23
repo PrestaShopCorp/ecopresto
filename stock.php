@@ -19,10 +19,11 @@
 *
 *  @package ec_ecopresto
 *  @author    Adonie SAS - Ecopresto
-*  @version    2.20.0
+*  @version    2.20.1
 *  @copyright Copyright (c) Adonie SAS - Ecopresto
 *  @license    Commercial license
 */
+
 
 include '../../config/settings.inc.php';
 include '../../config/config.inc.php';
@@ -47,6 +48,7 @@ if (Tools::getValue('ec_token') != $catalog->getInfoEco('ECO_TOKEN'))
 }
 $htmldebug = '<html><body style="font-family:arial"><h3>Cron - Stock</h3><ul>';
 $htmldebug .= '<li>Début du traitement '.date('m/d/Y - H:i').'</li>';
+
 $id_shop = $catalog->getInfoEco('ID_SHOP');
 $stockD = $catalog->getInfoEco('ECO_URL_STOCK').$catalog->tabConfig['ID_ECOPRESTO'];
 $stockL = 'files/stock.xml';
@@ -66,61 +68,56 @@ foreach ($lstTax as $tax)
 											AND `id_country` = '.(int)Configuration::get('PS_COUNTRY_DEFAULT').'
 											AND t.`id_tax` = tr.`id_tax`');
 }
-$htmldebug .= '<li>Taxe, OK</li>';
+
 if ($download->load($stockD) == true)
 {
-	$htmldebug .= '<li>Téléchargement stock, OK</li>';
 	$download->saveTo($stockL);
 	if (($handle = fopen($stockL, 'r')) !== false)
 	{
 		$etat = $catalog->updateMAJStock();
-		$htmldebug .= '<li>MaJ stock, OK</li>';
+		$htmldebug .= '<li>Téléchargement fichier stock OK</li>';
 		$iteration = 0;
 		while (($data = fgetcsv($handle, 10000, ';')) !== false)
 		{
-			$iteration ++;
-			if (verifierPresenceReference($data[0]))
-			{
-				$ref = $data[0];
-				$qty = $data[1];
-				$pri = $data[2];
-				$tva = $data[3];
-				$reference = new importerReference($ref);
-	
-				if (isset($reference->id_product) && $reference->id_product > 0)
-					if (version_compare(_PS_VERSION_, '1.5', '>='))
+			
+			$ref = $data[0];
+			$qty = $data[1];
+			$pri = $data[2];
+			$tva = $data[3];
+			$reference = new importerReference($ref);
+
+			if (isset($reference->id_product) && $reference->id_product > 0)
+				if (version_compare(_PS_VERSION_, '1.5', '>='))
+				{
+					if ($reference->id_product_attribute)
 					{
-						if ($reference->id_product_attribute)
+						$allAT = importerReference::getAllProductIdByReference($ref);
+						if (count($allAT) < 1)
+							$allAT[] = 0;
+						foreach ($allAT as $att)
 						{
-							$allAT = importerReference::getAllProductIdByReference($ref);
-							if (count($allAT) < 1)
-								$allAT[] = 0;
-							foreach ($allAT as $att)
-							{
-								StockAvailable::setQuantity((int)$reference->id_product, (int)$att, (int)$qty, (int)getShopForRef($att, 1));
-								updatePrice((int)$reference->id_product, (int)$att, (float)$pri, (float)$tva, (int)getShopForRef($att, 1), $tabTax);
-							}
-						}
-						else
-						{
-							StockAvailable::setQuantity((int)$reference->id_product, 0, (int)$qty, (int)getShopForRef($ref, 2));
-							updatePrice((int)$reference->id_product, 0, (float)$pri, (float)$tva, (int)getShopForRef($reference->id_product, 0), $tabTax);
+							StockAvailable::setQuantity((int)$reference->id_product, (int)$att, (int)$qty, (int)getShopForRef($att, 1));
+							updatePrice((int)$reference->id_product, (int)$att, (float)$pri, (float)$tva, (int)getShopForRef($att, 1), $tabTax);
 						}
 					}
 					else
 					{
-						updateProductQuantity($reference->id_product, $reference->id_product_attribute, $qty);
-						updatePrice((int)$reference->id_product, $reference->id_product_attribute, (float)$pri, (float)$tva, 1, $tabTax);
+						StockAvailable::setQuantity((int)$reference->id_product, 0, (int)$qty, (int)getShopForRef($ref, 2));
+						updatePrice((int)$reference->id_product, 0, (float)$pri, (float)$tva, (int)getShopForRef($reference->id_product, 0), $tabTax);
 					}
-			}
+				}
+				else
+				{
+					updateProductQuantity($reference->id_product, $reference->id_product_attribute, $qty);
+					updatePrice((int)$reference->id_product, $reference->id_product_attribute, (float)$pri, (float)$tva, 1, $tabTax);
+				}
+				$iteration ++;
 		}
-		$htmldebug .= '<li>Traitement stock, OK. Itérations: '.$iteration.'</li>';
 		$catalog->updateMAJStock($etat);
+		$htmldebug .= '<li>Process mise à jour stock OK : '.$iteration.' itérations</li>';
 	}
 }
-$htmldebug .= '<li>Fin du traitement '.date('m/d/Y - H:i').'</li>';
-if (Tools::getValue('debug'))
-	echo $htmldebug;
+
 function updatePrice($idP, $att = 0, $pri, $tva, $idS, $tabTax)
 {
 	$catalog = new Catalog();
@@ -136,23 +133,6 @@ function updatePrice($idP, $att = 0, $pri, $tva, $idS, $tabTax)
 		if (version_compare(_PS_VERSION_, '1.5', '>='))
             Db::getInstance()->execute('UPDATE `'._DB_PREFIX_.'product_shop` SET wholesale_price = '.(float)$wholesale_price.' WHERE `id_product` = '.(int)$idP);
 	}
-}
-
- /**
-  * Cette fonction vérifie la présence de la référence dans le référentiel produit. Renvoi vrai si trouvé, faux sinon. 
-  *
-  *
-  * @param reference
-  * @return boolean
-  */
-function verifierPresenceReference ($reference)
-{
-	$reference = strstr($reference, '-', true);
-	$nbref = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('SELECT COUNT( * ) FROM `'._DB_PREFIX_.'product` WHERE `supplier_reference` = "'.pSQL($reference).'"');
-	if ($nbref > 0)
-		return true;
-	else 
-		return false;
 }
 
 function getShopForRef($id, $typ)
@@ -186,3 +166,7 @@ function updateProductQuantity($id_product, $id_product_attribute, $quantity)
 }
 
 $catalog->UpdateUpdateDate('DATE_STOCK');
+
+$htmldebug .= '<li>Fin du traitement '.date('m/d/Y - H:i').'</li>';
+if (Tools::getValue('debug'))
+	echo $htmldebug;
